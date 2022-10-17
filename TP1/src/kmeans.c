@@ -1,5 +1,8 @@
 #include "../include/kmeans.h"
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <math.h>
 
 void k_means(point* samples, point* clusters);
@@ -40,20 +43,41 @@ def has_converged(mu, oldmu):
 */
 void has_converged() {}
 
-/*
-def find_centers(X, K):
-    # Initialize to K random centers
-    oldmu = random.sample(X, K)
-    mu = random.sample(X, K)
-    while not has_converged(mu, oldmu):
-        oldmu = mu
-        # Assign all points in X to clusters
-        clusters = cluster_points(X, mu)
-        # Reevaluate centers
-        mu = reevaluate_centers(oldmu, clusters)
-    return(mu, clusters)
+/**
+ * Selects patterns as initial centers
 */
-void find_centers() {}
+void initCenter(point* X, point* Y) {
+        int centerID;
+    for(size_t i = 0; i < Nc; i++) {
+        // Split in Nc blocks of N/Nc length
+        centerID = rand() % (N / Nc * (i + 1) - N / Nc * i + 1) + N / Nc * 1;
+        for(size_t j = 0; j < Nv; j ++) {
+            Y->x = i;
+            Y->y = j;
+            X->x = centerID;
+            X->y = j;
+        }
+    }
+    return;
+}
+
+/*
+    def find_centers(X, K):
+        # Initialize to K random centers
+        oldmu = random.sample(X, K)
+        mu = random.sample(X, K)
+        while not has_converged(mu, oldmu):
+            oldmu = mu
+            # Assign all points in X to clusters
+            clusters = cluster_points(X, mu)
+            # Reevaluate centers
+            mu = reevaluate_centers(oldmu, clusters)
+        return(mu, clusters)
+*/
+
+void find_centers() {
+
+}
 
 void k_means(point* samples, point* clusters) {
     int step = 0;
