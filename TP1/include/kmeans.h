@@ -6,6 +6,6 @@
 
 #include "../include/utils.h"
 
-void k_means(point* samples, point* clusters);
+int k_means(point* samples, point* clusters);
 
 #endif
