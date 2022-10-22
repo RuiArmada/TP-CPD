@@ -15,29 +15,51 @@ typedef struct {
     int total;    // number of points in the cluster
 } metric;
 
-void recalculate_centroids(point*, point*, metric*);
-inline bool has_converged(int, float, float);
+inline void recalculate_centroids(point*, metric*);
+void cluster_points(point*, point*, metric*);
+inline bool has_converged(metric*, metric*);
+inline bool has_converged_dists(float, float);
 int k_means(point*, point*);
 
 // Original python code was taken from https://datasciencelab.wordpress.com/tag/lloyds-algorithm/
 
-inline void recalculate_centroids(point* points, point* clusters, metric* metrics) {
+inline void recalculate_centroids(point* clusters, metric* metrics) {
     for (int i = 0; i < K; i++) {
         clusters[i].x = metrics[i].x_sum / metrics[i].total;
         clusters[i].y = metrics[i].y_sum / metrics[i].total;
+        clusters[i].id = metrics[i].total;
     }
 }
 
 /**
- * @brief Checks if the algorithm has converged.
- *        Returns true if the algorithm has converged.
+ * @brief Assigns each sample to the nearest cluster using the euclidean distance.
  *
- * @param iter Iteration number
- * @param metric Current metric
- * @param old_metric Previous metric
+ * @param samples
+ * @param clusters
+ * @param new list of metrics used for the iteration
  */
-inline bool has_converged(int iter, float old_metric, float metric) {
-    return iter > 100 || old_metric > metric;
+void cluster_points(point* samples, point* clusters, metric* new) {
+    for (int i = 0; i < N; i++) {
+        float min_distance = euclidean_distance(&samples[i], &clusters[0]);
+        int cluster_id = 0;
+
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            if (distance < min_distance) {
+                min_distance = distance;
+                cluster_id = j;
+            }
+        }
+
+        samples[i].id = cluster_id;
+        samples[i].d = min_distance;
+
+        clusters[cluster_id].id++;  // increment the number of points
+
+        new[cluster_id].x_sum += samples[i].x;
+        new[cluster_id].y_sum += samples[i].y;
+        new[cluster_id].total++;
+    }
 }
 
 /**
@@ -46,10 +68,13 @@ inline bool has_converged(int iter, float old_metric, float metric) {
  * @param old metric struct with previous iter values.
  * @param new metric struct with current iter values.
  */
-inline bool has_converged_new(metric* old, metric* new) {
-    for (int i = 0; i < K; i++)
-        if (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total)
+inline bool has_converged(metric* old, metric* new) {
+    for (int i = 0; i < K; i++) {
+        if (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total) {
             return false;
+        }
+    }
+    return true;
 }
 
 /**
@@ -63,58 +88,33 @@ inline bool has_converged_dists(float old, float new) {
 }
 
 /**
- * @brief Assigns each sample to the nearest cluster using the euclidean distance.
- *
- * @param samples
- * @param clusters
- * @param new list of metrics used for the iteration
- */
-void cluster_points(point* samples, point* clusters, metric* new) {
-    float min_distance, distance;
-    int min_cluster_id;
-
-    for (int i = 0; i < N; i++) {
-        min_distance = euclidean_distance(&samples[i], &clusters[0]);
-        min_cluster_id = 0;
-
-        for (int j = 1; j < K; j++) {
-            distance = euclidean_distance(&samples[i], &clusters[j]);
-            if (distance < min_distance) {
-                min_distance = distance;
-                min_cluster_id = j;
-            }
-        }
-
-        samples[i].id = min_cluster_id;
-    }
-}
-
-/**
  * @brief K-means algorithm naive implementation.
  *
  * @param samples
  * @param clusters
  */
 int k_means(point* samples, point* clusters) {
-    int iter = 0;               // itertation counter
-    int old_metric, metri = 0;  // metrics to check whether the algorithm has converged
+    int iter = 0;  // itertation counter
 
     metric* old = calloc(K, sizeof(metric));
     metric* new = calloc(K, sizeof(metric));
 
+    // Step 1c - Assign each sample to the nearest cluster using the euclidean distance.
+    cluster_points(samples, clusters, new);
+
     do {
-        // memcpy new to old
+        // Step 2 - Calculate the centroid of each cluster. (also known as the geometric center)
+        recalculate_centroids(clusters, new);
+
+        // Delete previous iter's metrics: set "new" to "old" and "new" to 0
         memcpy(old, new, K * sizeof(metric));
         memset(new, 0, K * sizeof(metric));
 
-        // Step 1c - Assign each sample to the nearest cluster using the euclidean distance
+        // Step 3 - Assign each sample to the nearest cluster using the euclidean distance
         cluster_points(samples, clusters, new);
 
-        // Step 3
-        recalculate_centroids(samples, clusters, new);
-
         iter++;
-    } while (!has_converged(iter, old_metric, metri));  // Step 4, TODO: improve convergence check?
+    } while (!has_converged(old, new));  // Step 4, TODO: improve convergence check?
 
     // Free the allocated memory
     free(old);
