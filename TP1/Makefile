@@ -67,4 +67,13 @@ run_prof: profiling
 	@gprof $(PRF)$(PROFILING_EXEC) gmon.out > analysis.txt
 	@mv *.log logs &2> /dev/null
 
+batchrun:
+	@for number in 1 2 3 4 5 6 7 8 9 10; do \
+        echo Running batch number $$number ; \
+		echo ; \
+		make run ; \
+		echo ; \
+		echo ; \
+    done
 # run_batch: clean main back_logs
+
