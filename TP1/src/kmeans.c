@@ -23,7 +23,7 @@ int k_means(point*, point*);
 
 // Original python code was taken from https://datasciencelab.wordpress.com/tag/lloyds-algorithm/
 
-inline void recalculate_centroids(point* clusters, metric* metrics) {
+void recalculate_centroids(point* clusters, metric* metrics) {
     for (int i = 0; i < K; i++) {
         clusters[i].x = metrics[i].x_sum / metrics[i].total;
         clusters[i].y = metrics[i].y_sum / metrics[i].total;
@@ -68,7 +68,7 @@ void cluster_points(point* samples, point* clusters, metric* new) {
  * @param old metric struct with previous iter values.
  * @param new metric struct with current iter values.
  */
-inline bool has_converged(metric* old, metric* new) {
+bool has_converged(metric* old, metric* new) {
     for (int i = 0; i < K; i++) {
         if (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total) {
             return false;
