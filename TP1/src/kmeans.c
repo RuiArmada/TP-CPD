@@ -15,25 +15,17 @@ typedef struct {
     int total;    // number of points in the cluster
 } metric;
 
-void cluster_points(point*, point*, metric*);
+void recalculate_centroids(point*, point*, metric*);
 inline bool has_converged(int, float, float);
 int k_means(point*, point*);
 
 // Original python code was taken from https://datasciencelab.wordpress.com/tag/lloyds-algorithm/
 
-/*
-def cluster_points(X, mu):
-    clusters  = {}
-    for x in X:
-        bestmukey = min([(i[0], np.linalg.norm(x-mu[i[0]])) \
-                    for i in enumerate(mu)], key=lambda t:t[1])[0]
-        try:
-            clusters[bestmukey].append(x)
-        except KeyError:
-            clusters[bestmukey] = [x]
-    return clusters
-*/
-void cluster_points(point* points, point* clusters, metric* metrics) {
+inline void recalculate_centroids(point* points, point* clusters, metric* metrics) {
+    for (int i = 0; i < K; i++) {
+        clusters[i].x = metrics[i].x_sum / metrics[i].total;
+        clusters[i].y = metrics[i].y_sum / metrics[i].total;
+    }
 }
 
 /**
@@ -51,6 +43,8 @@ inline bool has_converged(int iter, float old_metric, float metric) {
 /**
  * @brief Checks whether the algorithm has converged.
  *
+ * @param old metric struct with previous iter values.
+ * @param new metric struct with current iter values.
  */
 inline bool has_converged_new(metric* old, metric* new) {
     for (int i = 0; i < K; i++)
@@ -58,7 +52,12 @@ inline bool has_converged_new(metric* old, metric* new) {
             return false;
 }
 
-// Convergence fun 3, eletric boogaloo
+/**
+ * @brief
+ *
+ * @param old total distances of previous iteration.
+ * @param new total distances of current iteration.
+ */
 inline bool has_converged_dists(float old, float new) {
     return (old - new) / old < 0.001;
 }
@@ -70,7 +69,7 @@ inline bool has_converged_dists(float old, float new) {
  * @param clusters
  * @param new list of metrics used for the iteration
  */
-void assign_samples_to_clusters(point* samples, point* clusters, metric* new) {
+void cluster_points(point* samples, point* clusters, metric* new) {
     float min_distance, distance;
     int min_cluster_id;
 
@@ -103,19 +102,16 @@ int k_means(point* samples, point* clusters) {
     metric* old = calloc(K, sizeof(metric));
     metric* new = calloc(K, sizeof(metric));
 
-    // Step 1c - Assign each sample to the nearest cluster using the euclidean distance
-    assign_samples_to_clusters(samples, clusters, new);
-
     do {
         // memcpy new to old
         memcpy(old, new, K * sizeof(metric));
         memset(new, 0, K * sizeof(metric));
 
-        // Step 2
-        // clusters = cluster_points(X, mu)
+        // Step 1c - Assign each sample to the nearest cluster using the euclidean distance
+        cluster_points(samples, clusters, new);
 
         // Step 3
-        assign_samples_to_clusters(samples, clusters, new);
+        recalculate_centroids(samples, clusters, new);
 
         iter++;
     } while (!has_converged(iter, old_metric, metri));  // Step 4, TODO: improve convergence check?
