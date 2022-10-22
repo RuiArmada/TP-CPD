@@ -15,17 +15,23 @@
 /**
  * @brief Logs a message to the console.
  *
- * @param message The message to be logged.
+ * @param K Number of clusters
+ * @param N Number of samples
+ * @param iterations Number of iterations
+ * @param clusters Array of clusters
  */
-void log_message_to_console(const char* message);
+void log_message_to_console(int k, int n, int iterations, point* clusters);
 
 /**
  * @brief Logs a message to a file.
  *
- * @param message The message to be logged.
- * @param file The file to log the message to.
+ * @param file File to write to
+ * @param K Number of clusters
+ * @param N Number of samples
+ * @param iterations Number of iterations
+ * @param clusters Array of clusters
  */
-void log_message_to_file(const char* message, FILE* file);
+void log_message_to_file(FILE* file, int k, int n, int iterations, point* clusters);
 
 /**
  * @brief Generates a filename for the log file.
@@ -35,14 +41,11 @@ void log_message_to_file(const char* message, FILE* file);
 void generate_filename(char* filename);
 
 /**
- * @brief Generates a message to be logged from args.
+ * @brief Generates a file to log the message to.
  *
- * @param message pointer to the message where the generated message will be stored.
- * @param k number of clusters.
- * @param n number of samples.
- * @param iterations number of iterations it took to converge.
- * @param clusters array of clusters.
+ * @param filename
+ * @return FILE*
  */
-void generate_message(char* message, int k, int n, int iterations, point* clusters);
+FILE* generate_file(const char* filename);
 
 #endif

@@ -7,6 +7,7 @@
  * int id - The id of the cluster this point belongs to
  * float x - The x coordinate of the point
  * float y - The y coordinate of the point
+ * float d - The distance of the point to its cluster
  */
 typedef struct {
     int id;   // cluster id, initialized to -1
