@@ -4,8 +4,12 @@ SRC = src/
 INCLUDES = include/
 
 EXEC = tp1
-CFLAGS = -Wall -Wextra -lm
-# CFLAGS += -Werror
+CFLAGS = -Wall -Wextra -Werror -lm
+#CFLAGS += -Og -g
+CFLAGS += -O3
+#CFLAGS += -funroll-loops
+
+VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --leak-resolution=high
 
 .DEFAULT_GOAL := main
 
@@ -18,9 +22,23 @@ $(BIN)utils.o: $(SRC)utils.c $(INCLUDES)utils.h
 $(BIN)kmeans.o: $(SRC)kmeans.c $(INCLUDES)kmeans.h
 	$(CC) $(CFLAGS) -c $(SRC)kmeans.c -o $(BIN)kmeans.o
 
-clean:
-	rm $(BIN)*.o $(BIN)$(EXEC) &2> /dev/null
-	clear
+valgrind: clean main
+	valgrind $(VALGRIND_FLAGS) $(BIN)$(EXEC)
 
-run:
+back_logs:
+	@mkdir -p logs
+	@mv *.log logs
+
+clean_objs:
+	@rm -f $(BIN)*.o
+
+clean_exec:
+	@rm -f $(BIN)$(EXEC) 
+
+clean: clean_objs clean_exec
+	@echo "Done cleaning"
+
+run: clean main
 	./$(BIN)$(EXEC)
+
+# run_batch: clean main back_logs
