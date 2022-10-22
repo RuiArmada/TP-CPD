@@ -52,7 +52,7 @@ void cluster_points(point* samples, point* clusters, metric* new) {
         //     (samples[i].y - clusters[0].y) * (samples[i].y - clusters[0].y);
         int cluster_id = 0;
 
-        for (int j = 1; j < K; j++) {
+        for (int j = 0; j < K; j++) {
             float distance = euclidean_distance(&samples[i], &clusters[j]);
             // float distance =
             //    (samples[i].x - clusters[j].x) * (samples[i].x - clusters[j].x) +
