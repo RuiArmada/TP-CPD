@@ -43,6 +43,6 @@ void generate_filename(char* filename);
  * @param iterations number of iterations it took to converge.
  * @param clusters array of clusters.
  */
-void generate_message(char* message, int k, int n, int iterations, cluster* clusters);
+void generate_message(char* message, int k, int n, int iterations, point* clusters);
 
 #endif

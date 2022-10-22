@@ -26,10 +26,10 @@ FILE* generate_file(const char* filename) {
     return file;
 }
 
-void generate_message(char* message, int K, int N, int iterations, cluster* clusters) {
+void generate_message(char* message, int K, int N, int iterations, point* clusters) {
     sprintf(message, "N = %d, K = %d", N, K);
     for (int i = 0; i < K; i++) {
-        sprintf(message, "Center: (%f, %f) : Size: %d", clusters[i].center->x, clusters[i].center->y, clusters[i].total);
+        sprintf(message, "Center: (%f, %f) : Size: %d", clusters[i].x, clusters[i].y, clusters[i].id);
     }
     sprintf(message, "Iterations: %d", iterations);
 }
