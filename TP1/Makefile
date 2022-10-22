@@ -67,5 +67,8 @@ run_prof: profiling
 	@gprof $(PRF)$(PROFILING_EXEC) gmon.out > analysis.txt
 	@mv *.log logs &2> /dev/null
 
+batchrun:
+	@./batchrun.sh
+
 # run_batch: clean main back_logs
 
