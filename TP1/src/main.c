@@ -19,7 +19,7 @@ int main() {
     printf("Allocating memory for samples and clusters.\n");
     point* samples = malloc(N * sizeof(point));
     point* clusters = malloc(K * sizeof(point));
-    char* filename = calloc(20, sizeof(char));
+    char* filename = calloc(30, sizeof(char));
 
     if (samples == NULL || clusters == NULL) {
         printf("Error allocating memory for samples or clusters. Exiting...");
@@ -36,9 +36,11 @@ int main() {
 
     // Step 1a, 1b
     gen_samples(samples, clusters, N, K);
-
     // Step 1c, 2, 3, 4
-    k_means(samples, clusters);
+    int iter = k_means(samples, clusters);
+
+    log_message_to_console(K, N, iter, clusters);
+    log_message_to_file(file, K, N, iter, clusters);
 
     printf("Cleaning up...\n");
     free(samples);
