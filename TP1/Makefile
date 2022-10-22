@@ -68,12 +68,7 @@ run_prof: profiling
 	@mv *.log logs &2> /dev/null
 
 batchrun:
-	@for number in 1 2 3 4 5 6 7 8 9 10; do \
-        echo Running batch number $$number ; \
-		echo ; \
-		make run ; \
-		echo ; \
-		echo ; \
-    done
+	@srun --partition=cpar perf stat -r 15 -e instructions,cycles ./bin/tp1
+	
 # run_batch: clean main back_logs
 
