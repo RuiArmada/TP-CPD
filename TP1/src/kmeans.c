@@ -1,6 +1,7 @@
 #include "../include/kmeans.h"
 
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -40,11 +41,22 @@ void recalculate_centroids(point* clusters, metric* metrics) {
  */
 void cluster_points(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i++) {
+        // TODO: use this to avoid one call to euclidean_distance.
+        //       Doing so will require some changes elsewhere.
+        //       Should yield a small performance boost.
+        //       Roughly -20% of the time spent in this function.
+        // float min_distance = samples[i].d;
         float min_distance = euclidean_distance(&samples[i], &clusters[0]);
+        // float min_distance =
+        //     (samples[i].x - clusters[0].x) * (samples[i].x - clusters[0].x) +
+        //     (samples[i].y - clusters[0].y) * (samples[i].y - clusters[0].y);
         int cluster_id = 0;
 
         for (int j = 1; j < K; j++) {
             float distance = euclidean_distance(&samples[i], &clusters[j]);
+            // float distance =
+            //    (samples[i].x - clusters[j].x) * (samples[i].x - clusters[j].x) +
+            //    (samples[i].y - clusters[j].y) * (samples[i].y - clusters[j].y);
             if (distance < min_distance) {
                 min_distance = distance;
                 cluster_id = j;
@@ -53,8 +65,6 @@ void cluster_points(point* samples, point* clusters, metric* new) {
 
         samples[i].id = cluster_id;
         samples[i].d = min_distance;
-
-        clusters[cluster_id].id++;  // increment the number of points
 
         new[cluster_id].x_sum += samples[i].x;
         new[cluster_id].y_sum += samples[i].y;
@@ -70,7 +80,6 @@ void cluster_points(point* samples, point* clusters, metric* new) {
  */
 
 bool has_converged(metric* old, metric* new) {
-
     for (int i = 0; i < K; i++) {
         if (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total) {
             return false;

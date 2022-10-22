@@ -7,7 +7,7 @@ INCLUDES = include/
 EXEC = tp1
 CFLAGS = -Wall -Wextra -Werror -lm
 # Performance flags
-CFLAGS += -O3
+CFLAGS += -O3 -ffast-math -fopt-info
 
 # Profiling flags and definitions
 PROFILING_EXEC = tp1_profiling
