@@ -5,9 +5,9 @@ PRF = prof/
 INCLUDES = include/
 
 EXEC = tp1
-CFLAGS = -Wall -Wextra -Werror -lm
+CFLAGS = -Wall -Wextra -Werror -lm 
 # Performance flags
-CFLAGS += -O3 -ffast-math -fopt-info
+CFLAGS += -O3 -ffast-math -fopt-info -march=native -mtune=native
 
 # Profiling flags and definitions
 PROFILING_EXEC = tp1_profiling
@@ -18,7 +18,7 @@ VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --l
 .DEFAULT_GOAL := main
 
 main: $(SRC)main.c $(BIN)kmeans.o $(BIN)utils.o
-	$(CC) $(CFLAGS) $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC)
+	$(CC) $(CFLAGS)  $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC)
 
 $(BIN)utils.o: $(SRC)utils.c $(INCLUDES)utils.h
 	$(CC) $(CFLAGS) -c $(SRC)utils.c -o $(BIN)utils.o

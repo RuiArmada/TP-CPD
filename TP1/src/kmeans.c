@@ -23,7 +23,7 @@ int k_means(point*, point*);
 
 // Original python code was taken from https://datasciencelab.wordpress.com/tag/lloyds-algorithm/
 
-void recalculate_centroids(point* clusters, metric* metrics) {
+inline void recalculate_centroids(point* clusters, metric* metrics) {
     for (int i = 0; i < K; i++) {
         clusters[i].x = metrics[i].x_sum / metrics[i].total;
         clusters[i].y = metrics[i].y_sum / metrics[i].total;
@@ -38,7 +38,7 @@ void recalculate_centroids(point* clusters, metric* metrics) {
  * @param clusters
  * @param new list of metrics used for the iteration
  */
-void cluster_points(point* samples, point* clusters, metric* new) {
+inline void cluster_points(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i++) {
         float min_distance = euclidean_distance(&samples[i], &clusters[0]);
         int cluster_id = 0;
@@ -76,6 +76,18 @@ bool has_converged(metric* old, metric* new) {
     return true;
 }
 
+inline int has_converged_branchless(metric* old, metric* new) {
+    int i = 0;
+
+    int val = old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total;
+
+    for (i = 1; i < K; i++) {
+        val |= (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total);
+    }
+
+    return val;
+}
+
 /**
  * @brief K-means algorithm naive implementation.
  *
@@ -103,7 +115,8 @@ int k_means(point* samples, point* clusters) {
         cluster_points(samples, clusters, new);
 
         iter++;
-    } while (!has_converged(old, new));  // Step 4, TODO: improve convergence check?
+    } while (has_converged_branchless(old, new));  // Step 4, TODO: improve convergence check?
+    //} while (!has_converged(old, new));  // Step 4, TODO: improve convergence check?
 
     // Free the allocated memory
     free(old);
