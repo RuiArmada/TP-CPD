@@ -67,7 +67,7 @@ inline void cluster_points(point* samples, point* clusters, metric* new) {
  * @param new metric struct with current iter values.
  */
 
-bool has_converged(metric* old, metric* new) {
+inline bool has_converged(metric* old, metric* new) {
     for (int i = 0; i < K; i++) {
         if (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total) {
             return false;
@@ -115,8 +115,8 @@ int k_means(point* samples, point* clusters) {
         cluster_points(samples, clusters, new);
 
         iter++;
-    } while (has_converged_branchless(old, new));  // Step 4, TODO: improve convergence check?
-    //} while (!has_converged(old, new));  // Step 4, TODO: improve convergence check?
+        //} while (has_converged_branchless(old, new));  // Step 4, TODO: improve convergence check?
+    } while (!has_converged(old, new));  // Step 4, TODO: improve convergence check?
 
     // Free the allocated memory
     free(old);
