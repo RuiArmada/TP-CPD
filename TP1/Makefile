@@ -7,7 +7,9 @@ INCLUDES = include/
 EXEC = tp1
 CFLAGS = -Wall -Wextra -Werror -lm 
 # Performance flags
-CFLAGS += -O3 -ffast-math -fopt-info -march=native -mtune=native
+CFLAGS += -O3 -ffast-math -fopt-info
+CFLAGS += -march=native -mtune=native
+# CFLAGS += -ftree-vectorize -msse4
 
 # Profiling flags and definitions
 PROFILING_EXEC = tp1_profiling

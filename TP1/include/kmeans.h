@@ -6,6 +6,11 @@
 
 #include "../include/utils.h"
 
-int k_means(point* samples, point* clusters);
+typedef struct {
+    int sizes[K];
+    int iterations;
+} k_means_out;
+
+k_means_out k_means(point* samples, point* clusters);
 
 #endif

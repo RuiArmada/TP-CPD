@@ -27,15 +27,15 @@ int main() {
     gen_samples(samples, clusters, N, K);
 
     // Step 1c, 2, 3, 4
-    int iter = k_means(samples, clusters);
+    k_means_out out = k_means(samples, clusters);
 
     // Print the results
     printf("N = %d, K = %d\n", N, K);
     for (int i = 0; i < K; i++) {
         printf("Center: (%.3f, %.3f) : Size: %d\n",
-               clusters[i].x, clusters[i].y, clusters[i].id);
+               clusters[i].x, clusters[i].y, out.sizes[i]);
     }
-    printf("Iterations: %d\n", iter);
+    printf("Iterations: %d\n", out.iterations);
 
     free(samples);
     free(clusters);
