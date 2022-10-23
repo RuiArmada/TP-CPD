@@ -26,11 +26,8 @@ void gen_samples(point* samples, point* clusters, int n_samples, int n_clusters)
         clusters[i].d = __FLT_MAX__;
         // clusters->points = NULL;  // TODO: allocate memory for the points
     }
-
-    // Step 1c - Assign each sample to the nearest cluster using the euclidean distance
 }
 
 inline float euclidean_distance(point* p1, point* p2) {
     return (p1->x - p2->x) * (p1->x - p2->x) + (p1->y - p2->y) * (p1->y - p2->y);
-    // return pow(p1->x - p2->x, 2) + pow(p1->y - p2->y, 2);
 }

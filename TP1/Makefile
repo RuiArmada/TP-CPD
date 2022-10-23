@@ -17,11 +17,8 @@ VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --l
 
 .DEFAULT_GOAL := main
 
-main: $(SRC)main.c $(BIN)kmeans.o $(BIN)utils.o $(BIN)logging.o
+main: $(SRC)main.c $(BIN)kmeans.o $(BIN)utils.o
 	$(CC) $(CFLAGS) $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC)
-
-$(BIN)logging.o: $(SRC)logging.c $(INCLUDES)logging.h
-	$(CC) $(CFLAGS) -c $(SRC)logging.c -o $(BIN)logging.o
 
 $(BIN)utils.o: $(SRC)utils.c $(INCLUDES)utils.h
 	$(CC) $(CFLAGS) -c $(SRC)utils.c -o $(BIN)utils.o
@@ -29,11 +26,8 @@ $(BIN)utils.o: $(SRC)utils.c $(INCLUDES)utils.h
 $(BIN)kmeans.o: $(SRC)kmeans.c $(INCLUDES)kmeans.h
 	$(CC) $(CFLAGS) -c $(SRC)kmeans.c -o $(BIN)kmeans.o
 
-profiling: $(SRC)main.c $(PRF)kmeans_p.o $(PRF)logging_p.o $(PRF)utils_p.o 
+profiling: $(SRC)main.c $(PRF)kmeans_p.o $(PRF)utils_p.o 
 	$(CC) $(PROFILING_CFLAGS) $(SRC)main.c $(PRF)*_p.o -o $(PRF)$(PROFILING_EXEC)
-
-$(PRF)logging_p.o: $(SRC)logging.c $(INCLUDES)logging.h
-	$(CC) $(PROFILING_CFLAGS) -c $(SRC)logging.c -o $(PRF)logging_p.o
 
 $(PRF)utils_p.o: $(SRC)utils.c $(INCLUDES)utils.h
 	$(CC) $(PROFILING_CFLAGS) -c $(SRC)utils.c -o $(PRF)utils_p.o
@@ -43,9 +37,6 @@ $(PRF)kmeans_p.o: $(SRC)kmeans.c $(INCLUDES)kmeans.h
 
 valgrind: main
 	valgrind $(VALGRIND_FLAGS) $(BIN)$(EXEC)
-
-mklogdir:
-	@mkdir -p logs &2> /dev/null
 
 clean_objs:
 	@rm -f $(BIN)*.o
@@ -58,14 +49,12 @@ clean_exec:
 clean: clean_objs clean_exec
 	@echo "Done cleaning"
 
-run: main mklogdir 
+run: main
 	./$(BIN)$(EXEC)
-	@mv *.log logs &2> /dev/null
 
 run_prof: profiling
 	./$(PRF)$(PROFILING_EXEC)
 	@gprof $(PRF)$(PROFILING_EXEC) gmon.out > analysis.txt
-	@mv *.log logs &2> /dev/null
 
 batchrun:
 	@for number in 1 2 3 4 5 6 7 8 9 10; do \

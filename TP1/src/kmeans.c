@@ -19,7 +19,6 @@ typedef struct {
 inline void recalculate_centroids(point*, metric*);
 void cluster_points(point*, point*, metric*);
 inline bool has_converged(metric*, metric*);
-inline bool has_converged_dists(float, float);
 int k_means(point*, point*);
 
 // Original python code was taken from https://datasciencelab.wordpress.com/tag/lloyds-algorithm/
