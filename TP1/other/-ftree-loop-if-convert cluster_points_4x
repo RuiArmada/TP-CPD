@@ -1,0 +1,20 @@
+-ftree-loop-if-convert cluster_points_4x
+
+N = 10000000, K = 4
+Center: (0.250, 0.750) : Size: 2499108
+Center: (0.250, 0.250) : Size: 2501256
+Center: (0.750, 0.250) : Size: 2499824
+Center: (0.750, 0.750) : Size: 2499812
+Iterations: 39
+
+ Performance counter stats for './bin/tp1':
+
+    15,452,672,485      instructions:u            #    2.21  insn per cycle         
+     6,987,302,201      cycles:u                                                    
+       435,650,444      branches:u                                                  
+         2,163,589      branch-misses:u           #    0.50% of all branches        
+
+       2.549751431 seconds time elapsed
+
+       2.438809000 seconds user
+       0.096319000 seconds sys

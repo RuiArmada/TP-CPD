@@ -7,10 +7,12 @@ INCLUDES = include/
 EXEC = tp1
 CFLAGS = -Wall -Wextra -Werror -lm 
 # Performance flags
-CFLAGS += -O3 -ffast-math -fopt-info
-#CFLAGS += -march=native -mtune=native
-CFLAGS += -mavx2 -mfma -mavx -msse -msse2 -msse3 -mfpmath=sse 
-CFLAGS += -flto 
+CFLAGS += -O3 -ffast-math -fopt-info -flto 
+# CFLAGS += -march=skylake -mtune=skylake
+CFLAGS += -mavx2 -mfma -mavx -msse -msse2 -msse3 -mfpmath=sse
+CFLAGS += -fgcse-sm -fgcse-las -faggressive-loop-optimizations -ftree-loop-if-convert
+# CFLAGS += -fgcse-sm -fgcse-las -faggressive-loop-optimizations -ftree-loop-if-convert
+# CFLAGS += -funswitch-loops
 # CFLAGS += -ftree-vectorizer-verbose=3 -ftree-vectorize
 
 # Profiling flags and definitions

@@ -607,7 +607,7 @@ k_means_out k_means(point* samples, point* clusters) {
         memset(new, 0, K * sizeof(metric));
 
         // Step 3 - Assign each sample to the nearest cluster using the euclidean distance
-        cluster_points_branchless_4x(samples, clusters, new);
+        cluster_points_4x(samples, clusters, new);
 
         // printf("%d\n", iter);
         // for (int i = 0; i < K; i++) {
