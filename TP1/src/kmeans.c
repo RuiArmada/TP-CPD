@@ -1,6 +1,5 @@
 #include "../include/kmeans.h"
 
-#include <immintrin.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -314,13 +313,256 @@ void cluster_points(point* samples, point* clusters, metric* new) {
     }
 }
 
+void cluster_points_branchless(point* samples, point* clusters, metric* new) {
+    for (int i = 0; i < N; i++) {
+        float min_distance = euclidean_distance(&samples[i], &clusters[0]);
+        int cluster_id = 0;
+
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            int mask = distance < min_distance;
+            min_distance = min_distance * (1 - mask) + distance * mask;
+            cluster_id = cluster_id * (1 - mask) + j * mask;
+        }
+
+        new[cluster_id].x_sum += samples[i].x;
+        new[cluster_id].y_sum += samples[i].y;
+        new[cluster_id].total++;
+    }
+}
+
+void cluster_points_branchless_2x(point* samples, point* clusters, metric* new) {
+    for (int i = 0; i < N; i += 2) {
+        float min_distance_0 = euclidean_distance(&samples[i], &clusters[0]);
+        float min_distance_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
+
+        int cluster_id_0 = 0;
+        int cluster_id_1 = 0;
+
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            int mask = distance < min_distance_0;
+            min_distance_0 = min_distance_0 * (1 - mask) + distance * mask;
+            cluster_id_0 = cluster_id_0 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 1], &clusters[j]);
+            mask = distance < min_distance_1;
+            min_distance_1 = min_distance_1 * (1 - mask) + distance * mask;
+            cluster_id_1 = cluster_id_1 * (1 - mask) + j * mask;
+        }
+
+        new[cluster_id_0].x_sum += samples[i].x;
+        new[cluster_id_0].y_sum += samples[i].y;
+        new[cluster_id_0].total++;
+
+        new[cluster_id_1].x_sum += samples[i + 1].x;
+        new[cluster_id_1].y_sum += samples[i + 1].y;
+        new[cluster_id_1].total++;
+    }
+
+    for (int i = N - (N % 2); i < N; i++) {
+        float min_distance = euclidean_distance(&samples[i], &clusters[0]);
+        int cluster_id = 0;
+
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            int mask = distance < min_distance;
+            min_distance = min_distance * (1 - mask) + distance * mask;
+            cluster_id = cluster_id * (1 - mask) + j * mask;
+        }
+
+        new[cluster_id].x_sum += samples[i].x;
+        new[cluster_id].y_sum += samples[i].y;
+        new[cluster_id].total++;
+    }
+}
+
+void cluster_points_branchless_4x(point* samples, point* clusters, metric* new) {
+    for (int i = 0; i < N; i += 4) {
+        float min_distance_0 = euclidean_distance(&samples[i], &clusters[0]);
+        float min_distance_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
+        float min_distance_2 = euclidean_distance(&samples[i + 2], &clusters[0]);
+        float min_distance_3 = euclidean_distance(&samples[i + 3], &clusters[0]);
+
+        int cluster_id_0 = 0;
+        int cluster_id_1 = 0;
+        int cluster_id_2 = 0;
+        int cluster_id_3 = 0;
+
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            int mask = distance < min_distance_0;
+            min_distance_0 = min_distance_0 * (1 - mask) + distance * mask;
+            cluster_id_0 = cluster_id_0 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 1], &clusters[j]);
+            mask = distance < min_distance_1;
+            min_distance_1 = min_distance_1 * (1 - mask) + distance * mask;
+            cluster_id_1 = cluster_id_1 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 2], &clusters[j]);
+            mask = distance < min_distance_2;
+            min_distance_2 = min_distance_2 * (1 - mask) + distance * mask;
+            cluster_id_2 = cluster_id_2 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 3], &clusters[j]);
+            mask = distance < min_distance_3;
+            min_distance_3 = min_distance_3 * (1 - mask) + distance * mask;
+            cluster_id_3 = cluster_id_3 * (1 - mask) + j * mask;
+        }
+
+        new[cluster_id_0].x_sum += samples[i].x;
+        new[cluster_id_0].y_sum += samples[i].y;
+        new[cluster_id_0].total++;
+
+        new[cluster_id_1].x_sum += samples[i + 1].x;
+        new[cluster_id_1].y_sum += samples[i + 1].y;
+        new[cluster_id_1].total++;
+
+        new[cluster_id_2].x_sum += samples[i + 2].x;
+        new[cluster_id_2].y_sum += samples[i + 2].y;
+        new[cluster_id_2].total++;
+
+        new[cluster_id_3].x_sum += samples[i + 3].x;
+        new[cluster_id_3].y_sum += samples[i + 3].y;
+        new[cluster_id_3].total++;
+    }
+
+    for (int i = N - (N % 4); i < N; i++) {
+        float min_distance = euclidean_distance(&samples[i], &clusters[0]);
+        int cluster_id = 0;
+
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            int mask = distance < min_distance;
+            min_distance = min_distance * (1 - mask) + distance * mask;
+            cluster_id = cluster_id * (1 - mask) + j * mask;
+        }
+
+        new[cluster_id].x_sum += samples[i].x;
+        new[cluster_id].y_sum += samples[i].y;
+        new[cluster_id].total++;
+    }
+}
+
+void cluster_points_branchless_8x(point* samples, point* clusters, metric* new) {
+    for (int i = 0; i < N; i += 8) {
+        float min_distance_0 = euclidean_distance(&samples[i], &clusters[0]);
+        float min_distance_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
+        float min_distance_2 = euclidean_distance(&samples[i + 2], &clusters[0]);
+        float min_distance_3 = euclidean_distance(&samples[i + 3], &clusters[0]);
+        float min_distance_4 = euclidean_distance(&samples[i + 4], &clusters[0]);
+        float min_distance_5 = euclidean_distance(&samples[i + 5], &clusters[0]);
+        float min_distance_6 = euclidean_distance(&samples[i + 6], &clusters[0]);
+        float min_distance_7 = euclidean_distance(&samples[i + 7], &clusters[0]);
+
+        int cluster_id_0 = 0;
+        int cluster_id_1 = 0;
+        int cluster_id_2 = 0;
+        int cluster_id_3 = 0;
+        int cluster_id_4 = 0;
+        int cluster_id_5 = 0;
+        int cluster_id_6 = 0;
+        int cluster_id_7 = 0;
+
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            int mask = distance < min_distance_0;
+            min_distance_0 = min_distance_0 * (1 - mask) + distance * mask;
+            cluster_id_0 = cluster_id_0 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 1], &clusters[j]);
+            mask = distance < min_distance_1;
+            min_distance_1 = min_distance_1 * (1 - mask) + distance * mask;
+            cluster_id_1 = cluster_id_1 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 2], &clusters[j]);
+            mask = distance < min_distance_2;
+            min_distance_2 = min_distance_2 * (1 - mask) + distance * mask;
+            cluster_id_2 = cluster_id_2 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 3], &clusters[j]);
+            mask = distance < min_distance_3;
+            min_distance_3 = min_distance_3 * (1 - mask) + distance * mask;
+            cluster_id_3 = cluster_id_3 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 4], &clusters[j]);
+            mask = distance < min_distance_4;
+            min_distance_4 = min_distance_4 * (1 - mask) + distance * mask;
+            cluster_id_4 = cluster_id_4 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 5], &clusters[j]);
+            mask = distance < min_distance_5;
+            min_distance_5 = min_distance_5 * (1 - mask) + distance * mask;
+            cluster_id_5 = cluster_id_5 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 6], &clusters[j]);
+            mask = distance < min_distance_6;
+            min_distance_6 = min_distance_6 * (1 - mask) + distance * mask;
+            cluster_id_6 = cluster_id_6 * (1 - mask) + j * mask;
+
+            distance = euclidean_distance(&samples[i + 7], &clusters[j]);
+            mask = distance < min_distance_7;
+            min_distance_7 = min_distance_7 * (1 - mask) + distance * mask;
+            cluster_id_7 = cluster_id_7 * (1 - mask) + j * mask;
+        }
+
+        new[cluster_id_0].x_sum += samples[i].x;
+        new[cluster_id_0].y_sum += samples[i].y;
+        new[cluster_id_0].total++;
+
+        new[cluster_id_1].x_sum += samples[i + 1].x;
+        new[cluster_id_1].y_sum += samples[i + 1].y;
+        new[cluster_id_1].total++;
+
+        new[cluster_id_2].x_sum += samples[i + 2].x;
+        new[cluster_id_2].y_sum += samples[i + 2].y;
+        new[cluster_id_2].total++;
+
+        new[cluster_id_3].x_sum += samples[i + 3].x;
+        new[cluster_id_3].y_sum += samples[i + 3].y;
+        new[cluster_id_3].total++;
+
+        new[cluster_id_4].x_sum += samples[i + 4].x;
+        new[cluster_id_4].y_sum += samples[i + 4].y;
+        new[cluster_id_4].total++;
+
+        new[cluster_id_5].x_sum += samples[i + 5].x;
+        new[cluster_id_5].y_sum += samples[i + 5].y;
+        new[cluster_id_5].total++;
+
+        new[cluster_id_6].x_sum += samples[i + 6].x;
+        new[cluster_id_6].y_sum += samples[i + 6].y;
+        new[cluster_id_6].total++;
+
+        new[cluster_id_7].x_sum += samples[i + 7].x;
+        new[cluster_id_7].y_sum += samples[i + 7].y;
+        new[cluster_id_7].total++;
+    }
+
+    for (int i = N - (N % 8); i < N; i++) {
+        float min_distance = euclidean_distance(&samples[i], &clusters[0]);
+        int cluster_id = 0;
+
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            int mask = distance < min_distance;
+            min_distance = min_distance * (1 - mask) + distance * mask;
+            cluster_id = cluster_id * (1 - mask) + j * mask;
+        }
+
+        new[cluster_id].x_sum += samples[i].x;
+        new[cluster_id].y_sum += samples[i].y;
+        new[cluster_id].total++;
+    }
+}
+
 /**
  * @brief Checks whether the algorithm has converged.
  *
  * @param old metric struct with previous iter values.
  * @param new metric struct with current iter values.
  */
-
 inline bool has_converged(metric* old, metric* new) {
     for (int i = 0; i < K; i++) {
         if (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total) {
@@ -331,15 +573,14 @@ inline bool has_converged(metric* old, metric* new) {
 }
 
 inline int has_converged_branchless(metric* old, metric* new) {
-    int i = 0;
-
-    int val = old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total;
+    int i = 0,
+        counter = 0;
 
     for (i = 1; i < K; i++) {
-        val |= (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total);
+        counter |= (old[i].x_sum != new[i].x_sum) | (old[i].y_sum != new[i].y_sum) | (old[i].total != new[i].total);
     }
 
-    return val;
+    return counter;
 }
 
 /**
@@ -366,11 +607,16 @@ k_means_out k_means(point* samples, point* clusters) {
         memset(new, 0, K * sizeof(metric));
 
         // Step 3 - Assign each sample to the nearest cluster using the euclidean distance
-        cluster_points_4x(samples, clusters, new);
+        cluster_points_branchless_4x(samples, clusters, new);
+
+        // printf("%d\n", iter);
+        // for (int i = 0; i < K; i++) {
+        //     printf("Cluster %d: (%f, %f)\n", i, clusters[i].x, clusters[i].y);
+        // }
 
         iter++;
-        //} while (has_converged_branchless(old, new));  // Step 4, TODO: improve convergence check?
-    } while (!has_converged(old, new));  // Step 4, TODO: improve convergence check?
+    } while (has_converged_branchless(old, new));  // Step 4, TODO: improve convergence check?
+    //} while (!has_converged(old, new));  // Step 4, TODO: improve convergence check?
 
     k_means_out out = {.iterations = iter};
 

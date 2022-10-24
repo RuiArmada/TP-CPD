@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 void gen_samples(point* samples, point* clusters, int n_samples, int n_clusters) {
@@ -15,12 +16,14 @@ void gen_samples(point* samples, point* clusters, int n_samples, int n_clusters)
     }
 
     // Step 1b - Initialize the K clusters with the coordinates of the first K samples
-    // According to the algorithm, these should be random samples.
-    // However, for the sake of reproducibility, the first K samples are used.
-    for (int i = 0; i < n_clusters; i++) {
-        clusters[i].x = samples[i].x;
-        clusters[i].y = samples[i].y;
-    }
+    // The first K samples are the initial centroids for reproducibility
+    // otherwise, would've been random
+    // for (int i = 0; i < n_clusters; i++) {
+    //     clusters[i].x = samples[i].x;
+    //     clusters[i].y = samples[i].y;
+    // }
+    // memcpy is faster than the for loop?
+    memcpy(clusters, samples, n_clusters * sizeof(point));
 }
 
 float euclidean_distance(point* p1, point* p2) {
