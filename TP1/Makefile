@@ -7,9 +7,13 @@ INCLUDES = include/
 EXEC = tp1
 CFLAGS = -Wall -Wextra -Werror -lm 
 # Performance flags
-CFLAGS += -O3 -ffast-math -fopt-info
-CFLAGS += -march=native -mtune=native
-# CFLAGS += -ftree-vectorize -msse4
+CFLAGS += -O3 -ffast-math -fopt-info -flto 
+# CFLAGS += -march=skylake -mtune=skylake
+CFLAGS += -mavx2 -mfma -mavx -msse -msse2 -msse3 -mfpmath=sse
+CFLAGS += -fgcse-sm -fgcse-las -faggressive-loop-optimizations -ftree-loop-if-convert
+# CFLAGS += -fgcse-sm -fgcse-las -faggressive-loop-optimizations -ftree-loop-if-convert
+# CFLAGS += -funswitch-loops
+# CFLAGS += -ftree-vectorizer-verbose=3 -ftree-vectorize
 
 # Profiling flags and definitions
 PROFILING_EXEC = tp1_profiling
@@ -20,7 +24,7 @@ VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --l
 .DEFAULT_GOAL := main
 
 main: $(SRC)main.c $(BIN)kmeans.o $(BIN)utils.o
-	$(CC) $(CFLAGS)  $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC)
+	$(CC) $(CFLAGS) $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC)
 
 $(BIN)utils.o: $(SRC)utils.c $(INCLUDES)utils.h
 	$(CC) $(CFLAGS) -c $(SRC)utils.c -o $(BIN)utils.o
@@ -58,8 +62,6 @@ run_prof: profiling
 	./$(PRF)$(PROFILING_EXEC)
 	@gprof $(PRF)$(PROFILING_EXEC) gmon.out > analysis.txt
 
-batchrun:
+run_batch: main
 	@srun --partition=cpar perf stat -r 15 -e instructions,cycles ./bin/tp1
 	
-# run_batch: clean main back_logs
-

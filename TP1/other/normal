@@ -1,0 +1,20 @@
+normal
+
+N = 10000000, K = 4
+Center: (0.250, 0.750) : Size: 2499108
+Center: (0.250, 0.250) : Size: 2501256
+Center: (0.750, 0.250) : Size: 2499824
+Center: (0.750, 0.750) : Size: 2499812
+Iterations: 39
+
+ Performance counter stats for './bin/tp1':
+
+    30,391,432,795      instructions:u            #    2.38  insn per cycle         
+    12,748,334,569      cycles:u                                                    
+     3,763,158,893      branches:u                                                  
+         2,093,387      branch-misses:u           #    0.06% of all branches        
+
+       4.484137622 seconds time elapsed
+
+       4.300345000 seconds user
+       0.138559000 seconds sys
