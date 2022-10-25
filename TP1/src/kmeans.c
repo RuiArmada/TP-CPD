@@ -17,12 +17,16 @@ typedef struct {
 } metric;
 
 inline void recalculate_centroids(point*, metric*);
-inline void cluster_points(point*, point*, metric*);                          // cluster points to the nearest cluster
-inline void cluster_points_2x(point* samples, point* clusters, metric* new);  // cluster points to the nearest cluster, loop unrolled 2x
+// inline void cluster_points(point*, point*, metric*);                                  // cluster points to the nearest cluster
+// inline void cluster_points_2x(point* samples, point* clusters, metric* new);          // cluster points to the nearest cluster, loop unrolled 2x
 inline void cluster_points_4x(point* samples, point* clusters, metric* new);  // cluster points to the nearest cluster, loop unrolled 4x
-void cluster_points_8x(point* samples, point* clusters, metric* new);         // cluster points to the nearest cluster, loop unrolled 8x
-inline bool has_converged(metric*, metric*);                                  // check whether the algorithm has converged
-inline int has_converged_branchless(metric* old, metric* new);                // check whether the algorithm has converged (branchless)
+// inline void cluster_points_8x(point* samples, point* clusters, metric* new);          // cluster points to the nearest cluster, loop unrolled 8x
+// inline void cluster_points_branchless(point* samples, point* clusters, metric* new);  // cluster points to the nearest cluster, branchless
+// void cluster_points_2x_branchless(point* samples, point* clusters, metric* new);      // cluster points to the nearest cluster, loop unrolled 2x, branchless
+// void cluster_points_4x_branchless(point* samples, point* clusters, metric* new);      // cluster points to the nearest cluster, loop unrolled 4x, branchless
+// void cluster_points_8x_branchless(point* samples, point* clusters, metric* new);      // cluster points to the nearest cluster, loop unrolled 8x, branchless
+inline bool has_converged(metric*, metric*);                    // check whether the algorithm has converged
+inline int has_converged_branchless(metric* old, metric* new);  // check whether the algorithm has converged (branchless)
 k_means_out k_means(point*, point*);
 
 // Original python code was taken from https://datasciencelab.wordpress.com/tag/lloyds-algorithm/
@@ -106,7 +110,7 @@ void cluster_points_4x(point* samples, point* clusters, metric* new) {
         new[cluster_id].total++;
     }
 }
-
+/*
 void cluster_points_8x(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i += 8) {
         float min_dist_0 = euclidean_distance(&samples[i], &clusters[0]);
@@ -228,14 +232,6 @@ void cluster_points_8x(point* samples, point* clusters, metric* new) {
     }
 }
 
-/**
- * @brief Assign each sample to the nearest cluster using the euclidean distance.
- *        This version of the algorithm loops two items at a time.
- *
- * @param samples
- * @param clusters
- * @param new
- */
 void cluster_points_2x(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i += 2) {
         float min_dist_0 = euclidean_distance(&samples[i], &clusters[0]);
@@ -287,13 +283,6 @@ void cluster_points_2x(point* samples, point* clusters, metric* new) {
     }
 }
 
-/**
- * @brief Assigns each sample to the nearest cluster using the euclidean distance.
- *
- * @param samples
- * @param clusters
- * @param new list of metrics used for the iteration
- */
 void cluster_points(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i++) {
         float min_distance = euclidean_distance(&samples[i], &clusters[0]);
@@ -556,7 +545,7 @@ void cluster_points_branchless_8x(point* samples, point* clusters, metric* new) 
         new[cluster_id].total++;
     }
 }
-
+*/
 /**
  * @brief Checks whether the algorithm has converged.
  *
@@ -596,7 +585,7 @@ k_means_out k_means(point* samples, point* clusters) {
     metric* new = calloc(K, sizeof(metric));
 
     // Step 1c - Assign each sample to the nearest cluster using the euclidean distance.
-    cluster_points(samples, clusters, new);
+    cluster_points_4x(samples, clusters, new);
 
     do {
         // Step 2 - Calculate the centroid of each cluster. (also known as the geometric center)
