@@ -1,9 +1,14 @@
 #include "../include/kmeans.h"
 
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#if CLUSTER_FUNC == 9
+#include <omp.h>
+#endif
+
+#include "../include/bconsts.h"
 
 /**
  * @brief Auxiliary struct to calculate cluster centers
@@ -16,29 +21,107 @@ typedef struct {
     int total;    // number of points in the cluster
 } metric;
 
-inline void recalculate_centroids(point*, metric*);
-// inline void cluster_points(point*, point*, metric*);                                  // cluster points to the nearest cluster
-// inline void cluster_points_2x(point* samples, point* clusters, metric* new);          // cluster points to the nearest cluster, loop unrolled 2x
-inline void cluster_points_4x(point* samples, point* clusters, metric* new);  // cluster points to the nearest cluster, loop unrolled 4x
-// inline void cluster_points_8x(point* samples, point* clusters, metric* new);          // cluster points to the nearest cluster, loop unrolled 8x
-// inline void cluster_points_branchless(point* samples, point* clusters, metric* new);  // cluster points to the nearest cluster, branchless
-// void cluster_points_2x_branchless(point* samples, point* clusters, metric* new);      // cluster points to the nearest cluster, loop unrolled 2x, branchless
-// void cluster_points_4x_branchless(point* samples, point* clusters, metric* new);      // cluster points to the nearest cluster, loop unrolled 4x, branchless
-// void cluster_points_8x_branchless(point* samples, point* clusters, metric* new);      // cluster points to the nearest cluster, loop unrolled 8x, branchless
-inline bool has_converged(metric*, metric*);                    // check whether the algorithm has converged
-inline int has_converged_branchless(metric* old, metric* new);  // check whether the algorithm has converged (branchless)
+void recalculate_centroids(point* samples, metric* clusters);
+void cluster_points(point* samples, point* clusters, metric* new);  // cluster points to the nearest cluster
+int has_converged(metric* old, metric* new);                        // check whether the algorithm has converged
 k_means_out k_means(point*, point*);
 
 // Original python code was taken from https://datasciencelab.wordpress.com/tag/lloyds-algorithm/
 
-inline void recalculate_centroids(point* clusters, metric* metrics) {
+void recalculate_centroids(point* clusters, metric* metrics) {
     for (int i = 0; i < K; i++) {
         clusters[i].x = metrics[i].x_sum / metrics[i].total;
         clusters[i].y = metrics[i].y_sum / metrics[i].total;
     }
 }
 
-void cluster_points_4x(point* samples, point* clusters, metric* new) {
+/**
+ * @brief Cluster points implementations.
+ *
+ * @param samples
+ * @param clusters
+ * @param new
+ */
+#if CLUSTER_FUNC == 1 || CLUSTER_FUNC == 9
+// cluster points
+void cluster_points(point* samples, point* clusters, metric* new) {
+    for (int i = 0; i < N; i++) {
+        float min_distance = euclidean_distance(&samples[i], &clusters[0]);
+        int cluster_id = 0;
+#if CLUSTER_FUNC == 9
+#pragma omp simd
+#endif
+        for (int j = 1; j < K; j++) {
+            float distance = euclidean_distance(&samples[i], &clusters[j]);
+            if (distance < min_distance) {
+                min_distance = distance;
+                cluster_id = j;
+            }
+        }
+
+        new[cluster_id].x_sum += samples[i].x;
+        new[cluster_id].y_sum += samples[i].y;
+        new[cluster_id].total++;
+    }
+}
+
+#elif CLUSTER_FUNC == 2
+// cluster_points loop unrolled 2x
+void cluster_points(point* samples, point* clusters, metric* new) {
+    for (int i = 0; i < N; i += 2) {
+        float min_dist_0 = euclidean_distance(&samples[i], &clusters[0]);
+        float min_dist_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
+
+        int cluster_id_0 = 0;
+        int cluster_id_1 = 0;
+
+        for (int j = 1; j < K; j++) {
+            float d = euclidean_distance(&samples[i], &clusters[j]);
+
+            if (d < min_dist_0) {
+                min_dist_0 = d;
+                cluster_id_0 = j;
+            }
+
+            d = euclidean_distance(&samples[i + 1], &clusters[j]);
+
+            if (d < min_dist_1) {
+                min_dist_1 = d;
+                cluster_id_1 = j;
+            }
+        }
+
+        new[cluster_id_0].x_sum += samples[i].x;
+        new[cluster_id_0].y_sum += samples[i].y;
+        new[cluster_id_0].total++;
+
+        new[cluster_id_1].x_sum += samples[i + 1].x;
+        new[cluster_id_1].y_sum += samples[i + 1].y;
+        new[cluster_id_1].total++;
+    }
+
+    for (int i = N - (N % 2); i < N; i++) {
+        float min_dist = euclidean_distance(&samples[i], &clusters[0]);
+        int cluster_id = 0;
+
+        for (int j = 1; j < K; j++) {
+            float d = euclidean_distance(&samples[i], &clusters[j]);
+            if (d < min_dist) {
+                min_dist = d;
+                cluster_id = j;
+            }
+        }
+
+        new[cluster_id].x_sum += samples[i].x;
+        new[cluster_id].y_sum += samples[i].y;
+        new[cluster_id].total++;
+    }
+}
+
+#elif CLUSTER_FUNC == 3
+// cluster_points loop unrolled 4x
+
+void cluster_points(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i += 4) {
         float min_dist_0 = euclidean_distance(&samples[i], &clusters[0]);
         float min_dist_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
@@ -110,8 +193,10 @@ void cluster_points_4x(point* samples, point* clusters, metric* new) {
         new[cluster_id].total++;
     }
 }
-/*
-void cluster_points_8x(point* samples, point* clusters, metric* new) {
+
+#elif CLUSTER_FUNC == 4
+// cluster_points loop unrolled 8x
+void cluster_points(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i += 8) {
         float min_dist_0 = euclidean_distance(&samples[i], &clusters[0]);
         float min_dist_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
@@ -232,77 +317,9 @@ void cluster_points_8x(point* samples, point* clusters, metric* new) {
     }
 }
 
-void cluster_points_2x(point* samples, point* clusters, metric* new) {
-    for (int i = 0; i < N; i += 2) {
-        float min_dist_0 = euclidean_distance(&samples[i], &clusters[0]);
-        float min_dist_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
-
-        int cluster_id_0 = 0;
-        int cluster_id_1 = 0;
-
-        for (int j = 1; j < K; j++) {
-            float d = euclidean_distance(&samples[i], &clusters[j]);
-
-            if (samples[i].d < min_dist_0) {
-                min_dist_0 = d;
-                cluster_id_0 = j;
-            }
-
-            d = euclidean_distance(&samples[i + 1], &clusters[j]);
-
-            if (samples[i + 1].d < min_dist_1) {
-                min_dist_1 = d;
-                cluster_id_1 = j;
-            }
-        }
-
-        new[cluster_id_0].x_sum += samples[i].x;
-        new[cluster_id_0].y_sum += samples[i].y;
-        new[cluster_id_0].total++;
-
-        new[cluster_id_1].x_sum += samples[i + 1].x;
-        new[cluster_id_1].y_sum += samples[i + 1].y;
-        new[cluster_id_1].total++;
-    }
-
-    for (int i = N - (N % 2); i < N; i++) {
-        float min_dist = euclidean_distance(&samples[i], &clusters[0]);
-        int cluster_id = 0;
-
-        for (int j = 1; j < K; j++) {
-            float d = euclidean_distance(&samples[i], &clusters[j]);
-            if (d < min_dist) {
-                min_dist = d;
-                cluster_id = j;
-            }
-        }
-
-        new[cluster_id].x_sum += samples[i].x;
-        new[cluster_id].y_sum += samples[i].y;
-        new[cluster_id].total++;
-    }
-}
-
+#elif CLUSTER_FUNC == 5
+// cluster_points loop branchless
 void cluster_points(point* samples, point* clusters, metric* new) {
-    for (int i = 0; i < N; i++) {
-        float min_distance = euclidean_distance(&samples[i], &clusters[0]);
-        int cluster_id = 0;
-
-        for (int j = 1; j < K; j++) {
-            float distance = euclidean_distance(&samples[i], &clusters[j]);
-            if (distance < min_distance) {
-                min_distance = distance;
-                cluster_id = j;
-            }
-        }
-
-        new[cluster_id].x_sum += samples[i].x;
-        new[cluster_id].y_sum += samples[i].y;
-        new[cluster_id].total++;
-    }
-}
-
-void cluster_points_branchless(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i++) {
         float min_distance = euclidean_distance(&samples[i], &clusters[0]);
         int cluster_id = 0;
@@ -320,7 +337,9 @@ void cluster_points_branchless(point* samples, point* clusters, metric* new) {
     }
 }
 
-void cluster_points_branchless_2x(point* samples, point* clusters, metric* new) {
+#elif CLUSTER_FUNC == 6
+// cluster_points branchless loop unrolled 2x
+void cluster_points(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i += 2) {
         float min_distance_0 = euclidean_distance(&samples[i], &clusters[0]);
         float min_distance_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
@@ -366,7 +385,9 @@ void cluster_points_branchless_2x(point* samples, point* clusters, metric* new) 
     }
 }
 
-void cluster_points_branchless_4x(point* samples, point* clusters, metric* new) {
+#elif CLUSTER_FUNC == 7
+// cluster_points branchless loop unrolled 4x
+void cluster_points(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i += 4) {
         float min_distance_0 = euclidean_distance(&samples[i], &clusters[0]);
         float min_distance_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
@@ -434,7 +455,9 @@ void cluster_points_branchless_4x(point* samples, point* clusters, metric* new) 
     }
 }
 
-void cluster_points_branchless_8x(point* samples, point* clusters, metric* new) {
+#elif CLUSTER_FUNC == 8
+// cluster_points branchless loop unrolled 8x
+void cluster_points(point* samples, point* clusters, metric* new) {
     for (int i = 0; i < N; i += 8) {
         float min_distance_0 = euclidean_distance(&samples[i], &clusters[0]);
         float min_distance_1 = euclidean_distance(&samples[i + 1], &clusters[0]);
@@ -545,32 +568,31 @@ void cluster_points_branchless_8x(point* samples, point* clusters, metric* new) 
         new[cluster_id].total++;
     }
 }
-*/
+#endif
+
 /**
  * @brief Checks whether the algorithm has converged.
  *
  * @param old metric struct with previous iter values.
  * @param new metric struct with current iter values.
  */
-inline bool has_converged(metric* old, metric* new) {
-    for (int i = 0; i < K; i++) {
-        if (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total) {
-            return false;
-        }
-    }
-    return true;
-}
-
-inline int has_converged_branchless(metric* old, metric* new) {
-    int i = 0,
-        counter = 0;
-
-    for (i = 1; i < K; i++) {
+inline int has_converged(metric* old, metric* new) {
+    int i = 0, counter = 0;
+    for (i = 0; i < K; i++) {
         counter |= (old[i].x_sum != new[i].x_sum) | (old[i].y_sum != new[i].y_sum) | (old[i].total != new[i].total);
     }
-
     return counter;
 }
+/*
+inline int has_converged(metric* old, metric* new) {
+    for (int i = 0; i < K; i++) {
+        if (old[i].x_sum != new[i].x_sum || old[i].y_sum != new[i].y_sum || old[i].total != new[i].total) {
+            return 0;
+        }
+    }
+    return 1;
+}
+*/
 
 /**
  * @brief K-means algorithm naive implementation.
@@ -585,7 +607,7 @@ k_means_out k_means(point* samples, point* clusters) {
     metric* new = calloc(K, sizeof(metric));
 
     // Step 1c - Assign each sample to the nearest cluster using the euclidean distance.
-    cluster_points_4x(samples, clusters, new);
+    cluster_points(samples, clusters, new);
 
     do {
         // Step 2 - Calculate the centroid of each cluster. (also known as the geometric center)
@@ -596,16 +618,10 @@ k_means_out k_means(point* samples, point* clusters) {
         memset(new, 0, K * sizeof(metric));
 
         // Step 3 - Assign each sample to the nearest cluster using the euclidean distance
-        cluster_points_4x(samples, clusters, new);
-
-        // printf("%d\n", iter);
-        // for (int i = 0; i < K; i++) {
-        //     printf("Cluster %d: (%f, %f)\n", i, clusters[i].x, clusters[i].y);
-        // }
+        cluster_points(samples, clusters, new);
 
         iter++;
-    } while (has_converged_branchless(old, new));  // Step 4, TODO: improve convergence check?
-    //} while (!has_converged(old, new));  // Step 4, TODO: improve convergence check?
+    } while (has_converged(old, new));  // Step 4, TODO: improve convergence check?
 
     k_means_out out = {.iterations = iter};
 
