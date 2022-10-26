@@ -22,9 +22,8 @@ int main() {
         printf("Error allocating memory for samples or clusters. Exiting...");
         return EXIT_FAILURE;
     }
-
     // Step 1a, 1b
-    gen_samples(samples, clusters, N, K);
+    gen_samples(samples, clusters);
 
     // Step 1c, 2, 3, 4
     k_means_out out = k_means(samples, clusters);
@@ -37,8 +36,8 @@ int main() {
     }
     printf("Iterations: %d\n", out.iterations);
 
-    free(samples);
-    free(clusters);
+    // free(samples);
+    // free(clusters);
 
     return EXIT_SUCCESS;
 }

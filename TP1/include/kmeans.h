@@ -1,9 +1,7 @@
 #ifndef KMEANS_H_
 #define KMEANS_H_
 
-#define N 10000000
-#define K 4
-
+#include "../include/bconsts.h"
 #include "../include/utils.h"
 
 typedef struct {
