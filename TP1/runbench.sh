@@ -13,19 +13,19 @@ srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/km
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_u2 > benchmarks/results/kmeans_u2_$DATE.log
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_u4 > benchmarks/results/kmeans_u4_$DATE.log
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_u8 > benchmarks/results/kmeans_u8_$DATE.log
-srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_bu8 > benchmarks/results/kmeans_b_$DATE.log
-srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_bu8_u2 > benchmarks/results/kmeans_b_u2_$DATE.log
-srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_bu8_u4 > benchmarks/results/kmeans_b_u4_$DATE.log
-srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_bu8_u8 > benchmarks/results/kmeans_b_u8_$DATE.log
+srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_b > benchmarks/results/kmeans_b_$DATE.log
+srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_bu2 > benchmarks/results/kmeans_b_u2_$DATE.log
+srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_bu4 > benchmarks/results/kmeans_b_u4_$DATE.log
+srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_bu8 > benchmarks/results/kmeans_b_u8_$DATE.log
 
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3 > benchmarks/results/kmeans_o3_$DATE.log
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_u2 > benchmarks/results/kmeans_o3_u2_$DATE.log
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_u4 > benchmarks/results/kmeans_o3_u4_$DATE.log
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_u8 > benchmarks/results/kmeans_o3_u8_$DATE.log
-srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_bu8 > benchmarks/results/kmeans_o3_b_$DATE.log
-srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_bu8_u2 > benchmarks/results/kmeans_o3_b_u2_$DATE.log
-srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_bu8_u4 > benchmarks/results/kmeans_o3_b_u4_$DATE.log
-srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_bu8_u8 > benchmarks/results/kmeans_o3_b_u8_$DATE.log
+srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_b > benchmarks/results/kmeans_o3_b_$DATE.log
+srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_bu2 > benchmarks/results/kmeans_o3_bu2_$DATE.log
+srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_bu4 > benchmarks/results/kmeans_o3_bu4_$DATE.log
+srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_bu8 > benchmarks/results/kmeans_o3_bu8_$DATE.log
 
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_tlic > benchmarks/results/kmeans_o3_tlic_$DATE.log
 srun --partition=cpar perf stat -e cycles,instructions -r 20 ./benchmarks/bin/kmeans_o3_tlic_u2 > benchmarks/results/kmeans_o3_tlic_u2_$DATE.log
