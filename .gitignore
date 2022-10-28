@@ -67,4 +67,4 @@ tp2
 .vscode/
 
 # log files
-.log
+*.log
