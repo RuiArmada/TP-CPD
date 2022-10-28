@@ -12,8 +12,9 @@ CFLAGS = -Wall -Wextra -Werror -lm -fopt-info
 
 #-PERFORMANCE-#
 # Performance flags
-CFLAGS += -O3 -ffast-math -flto
-CFLAGS += -msse3 -mfpmath=sse 
+CFLAGS += -O2 -ffast-math -flto
+# unfortunatly, -mfma is not supported by the cluster, speeds things up more than 2x
+# CFLAGS += -mfma -msse3 -mfpmath=sse 
 CFLAGS += -ftree-loop-if-convert
 
 #-PROFILING-#
@@ -26,11 +27,11 @@ PROFILING_CFLAGS = -g -O0 -pg -lm
 
 VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --leak-resolution=high
 
-###################################################################################################
+#- BEST CASE -#
 
 .DEFAULT_GOAL := main
 
-DEFAULT_VALS = -DEUCLIDEAN_FUNC=2 -DCLUSTER_FUNC=3 -DCONVERGE_FUNC=2
+DEFAULT_VALS = -DEUCLIDEAN_FUNC=2 -DCLUSTER_FUNC=1
 
 main: $(SRC)main.c $(BIN)kmeans.o $(BIN)utils.o $(INCLUDES)bconsts.h
 	$(CC) $(CFLAGS) $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC) $(DEFAULT_VALS)
@@ -41,7 +42,7 @@ $(BIN)utils.o: $(SRC)utils.c $(INCLUDES)utils.h $(INCLUDES)bconsts.h
 $(BIN)kmeans.o: $(SRC)kmeans.c $(INCLUDES)kmeans.h $(INCLUDES)bconsts.h
 	$(CC) $(CFLAGS) -c $(SRC)kmeans.c -o $(BIN)kmeans.o $(DEFAULT_VALS)
 
-######################################## BENCHMARKS ###############################################
+#- BENCHMARKS -#
 
 # Benchmarks take three arguments:
 # 1. The CFLASGS to compile with, BNC_CFLAGS
@@ -59,19 +60,21 @@ $(BIN)bncutils$(BNC_SUFFIX).o: $(SRC)utils.c $(INCLUDES)utils.h $(INCLUDES)bcons
 $(BIN)bnckmeans$(BNC_SUFFIX).o: $(SRC)kmeans.c $(INCLUDES)kmeans.h $(INCLUDES)bconsts.h
 	$(CC) $(BNC_CFLAGS) -c $(SRC)kmeans.c -o $(BNC)kmeans$(BNC_SUFFIX).o
 
-########################################## PROFILING ##############################################
+#- PROFILING -#
 
 profiling: $(SRC)main.c $(PRF)kmeans_p.o $(PRF)utils_p.o 
-	$(CC) $(PROFILING_CFLAGS) $(SRC)main.c $(PRF)*_p.o -o $(PRF)$(PROFILING_EXEC)
+	$(CC) $(PROFILING_CFLAGS) $(SRC)main.c $(PRF)*_p.o -o $(PRF)$(PROFILING_EXEC) $(DEFAULT_VALS)
 
 $(PRF)utils_p.o: $(SRC)utils.c $(INCLUDES)utils.h
-	$(CC) $(PROFILING_CFLAGS) -c $(SRC)utils.c -o $(PRF)utils_p.o
+	$(CC) $(PROFILING_CFLAGS) -c $(SRC)utils.c -o $(PRF)utils_p.o $(DEFAULT_VALS)
 
 $(PRF)kmeans_p.o: $(SRC)kmeans.c $(INCLUDES)kmeans.h
-	$(CC) $(PROFILING_CFLAGS) -c $(SRC)kmeans.c -o $(PRF)kmeans_p.o
+	$(CC) $(PROFILING_CFLAGS) -c $(SRC)kmeans.c -o $(PRF)kmeans_p.o $(DEFAULT_VALS)
 
 valgrind: main
 	valgrind $(VALGRIND_FLAGS) $(BIN)$(EXEC)
+
+#- Other -#
 
 clean_objs:
 	@rm -f $(BIN)*.o
