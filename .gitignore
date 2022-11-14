@@ -60,8 +60,7 @@ dkms.conf
 # custom rules
 
 # Executables
-tp1
-tp2
+k_means
 
 # ide files
 .vscode/

@@ -3,7 +3,7 @@ BIN = bin/
 SRC = src/
 BNC = benchmarks/
 INCLUDES = include/
-EXEC = tp1
+EXEC = k_means
 # number of threads to use
 THREADS = 
 
@@ -15,7 +15,7 @@ CFLAGS = -Wall -Wextra -Werror -lm -fopt-info -fopenmp
 # Performance flags
 CFLAGS += -O2 -ffast-math -flto
 # unfortunatly, -mfma is not supported by the cluster, speeds things up more than 2x
-# CFLAGS += -mfma -msse3 -mfpmath=sse 
+CFLAGS += -mfma -msse4.2 -mfpmath=sse -mbmi2 -maes -mpclmul -mavx2 -mprfchw -mrdseed -mrdrnd -msgx -mxsave -mxsavec -mxsaveopt -mxsaves -mpopcnt
 CFLAGS += -ftree-loop-if-convert
 
 #-VALGRIND-#

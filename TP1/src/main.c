@@ -15,45 +15,36 @@
 // Step 3 - Assign each sample to the nearest cluster using the euclidean distance.
 // Step 4 - Repeat steps 2 and 3 until there are no points that change clusters.
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     // ./k_means <sample_count> <cluster_count> <thread_count>
     if (unlikely(argc < 3)) {
         return EXIT_FAILURE;
     }
 
+
     int sample_count = atoi(argv[1]);
     int cluster_count = atoi(argv[2]);
 
-    point *samples = (point *)malloc(sample_count * sizeof(point));
-    point *clusters = (point *)malloc(cluster_count * sizeof(point));
+    point* samples = (point*)malloc(sample_count * sizeof(point));
+    point* clusters = (point*)malloc(cluster_count * sizeof(point));
 
     k_means_out out = k_means_out_init(cluster_count);
 
-    // if (argc == 4) {
-    //     // run parallel version with # threads
-    //     int thread_count = atoi(argv[3]);
-    //
-    //     // ...
-    //
-    // } else {
-    //     // run sequential version
-    //
-    //     if (samples == NULL || clusters == NULL) {
-    //         printf("Error allocating memory for samples or clusters. Exiting...");
-    //         return EXIT_FAILURE;
-    //     }
-    //     // Step 1a, 1b
-    //     gen_samples(samples, clusters);
-    //
-    //     // Step 1c, 2, 3, 4
-    //     k_means_out out = k_means(samples, clusters);
-    // }
+    if (argc == 4) {
+        int thread_count = atoi(argv[3]);
+
+        out = k_means_par(samples, clusters, sample_count, cluster_count, thread_count);
+    }
+    else {
+        // Step 1 - Initialize the samples & clusters.
+        out = k_means_seq(samples, clusters, sample_count, cluster_count);
+    }
 
     // Print the results
     printf("N = %d, K = %d\n", sample_count, cluster_count);
     for (int i = 0; i < cluster_count; i++) {
         printf("Center: (%.3f, %.3f) : Size: %d\n",
-               clusters[i].x, clusters[i].y, out.cluster_size[i]);
+            clusters[i].x, clusters[i].y, out.cluster_size[i]);
     }
     printf("Iterations: %d\n", out.iterations);
 
