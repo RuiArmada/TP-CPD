@@ -1,14 +1,15 @@
 CC = gcc
 BIN = bin/
 SRC = src/
-PRF = prof/
 BNC = benchmarks/
 INCLUDES = include/
 EXEC = tp1
+# number of threads to use
+THREADS = 
 
 ########################################## CFLAGS #################################################
 # General purpose flags
-CFLAGS = -Wall -Wextra -Werror -lm -fopt-info
+CFLAGS = -Wall -Wextra -Werror -lm -fopt-info -fopenmp
 
 #-PERFORMANCE-#
 # Performance flags
@@ -17,30 +18,30 @@ CFLAGS += -O2 -ffast-math -flto
 # CFLAGS += -mfma -msse3 -mfpmath=sse 
 CFLAGS += -ftree-loop-if-convert
 
-#-PROFILING-#
-
-# Profiling flags and definitions
-PROFILING_EXEC = tp1_profiling
-PROFILING_CFLAGS = -g -O0 -pg -lm 
-
 #-VALGRIND-#
 
 VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --leak-resolution=high
 
-#- BEST CASE -#
 
 .DEFAULT_GOAL := main
 
-DEFAULT_VALS = -DEUCLIDEAN_FUNC=2 -DCLUSTER_FUNC=1
+$(BIN)euclidean_distance.o: $(SRC)euclidean_distance.c $(INCLUDES)euclidean_distance.h
+	$(CC) $(CFLAGS) -c $(SRC)euclidean_distance.c -o $(BIN)euclidean_distance.o
 
-main: $(SRC)main.c $(BIN)kmeans.o $(BIN)utils.o $(INCLUDES)bconsts.h
-	$(CC) $(CFLAGS) $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC) $(DEFAULT_VALS)
+$(BIN)gen_samples.o: $(SRC)gen_samples.c $(INCLUDES)gen_samples.h
+	$(CC) $(CFLAGS) -c $(SRC)gen_samples.c -o $(BIN)gen_samples.o
 
-$(BIN)utils.o: $(SRC)utils.c $(INCLUDES)utils.h $(INCLUDES)bconsts.h
-	$(CC) $(CFLAGS) -c $(SRC)utils.c -o $(BIN)utils.o $(DEFAULT_VALS)
+$(BIN)common.o: $(SRC)k_means/common.c $(INCLUDES)k_means/common.h
+	$(CC) $(CFLAGS) -c $(SRC)k_means/common.c -o $(BIN)common.o
 
-$(BIN)kmeans.o: $(SRC)kmeans.c $(INCLUDES)kmeans.h $(INCLUDES)bconsts.h
-	$(CC) $(CFLAGS) -c $(SRC)kmeans.c -o $(BIN)kmeans.o $(DEFAULT_VALS)
+$(BIN)k_means_seq.o: $(SRC)k_means/k_means_seq.c $(INCLUDES)k_means/common.h $(INCLUDES)k_means/k_means_seq.h
+	$(CC) $(CFLAGS) -c $(SRC)k_means/k_means_seq.c -o $(BIN)k_means_seq.o
+
+$(BIN)k_means_par.o: $(SRC)k_means/k_means_par.c $(INCLUDES)k_means/common.h $(INCLUDES)k_means/k_means_par.h
+	$(CC) $(CFLAGS) -c $(SRC)k_means/k_means_par.c -o $(BIN)k_means_par.o
+
+main: $(SRC)main.c $(BIN)euclidean_distance.o $(BIN)gen_samples.o $(BIN)k_means_seq.o $(BIN)k_means_par.o $(BIN)common.o
+	$(CC) $(CFLAGS) $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC)
 
 #- BENCHMARKS -#
 
@@ -49,27 +50,16 @@ $(BIN)kmeans.o: $(SRC)kmeans.c $(INCLUDES)kmeans.h $(INCLUDES)bconsts.h
 # 2. The suffix to append to the executable and .o files, BNC_SUFFIX
 # 3. The name of the executable, BNC_EXEC
 # Check include/bconsts.h for the accepted values for the functions
-
-benchmark: $(SRC)main.c $(BIN)bnckmeans$(BNC_SUFFIX).o $(BIN)bncutils$(BNC_SUFFIX).o $(INCLUDES)bconsts.h
-	$(CC) $(BNC_CFLAGS) $(SRC)main.c $(BNC)*$(BNC_SUFFIX).o -o $(BNC)/bin/$(BNC_EXEC)$(BNC_SUFFIX)
-	rm $(BNC)*.o
-
-$(BIN)bncutils$(BNC_SUFFIX).o: $(SRC)utils.c $(INCLUDES)utils.h $(INCLUDES)bconsts.h
-	$(CC) $(BNC_CFLAGS) -c $(SRC)utils.c -o $(BNC)utils$(BNC_SUFFIX).o
-
-$(BIN)bnckmeans$(BNC_SUFFIX).o: $(SRC)kmeans.c $(INCLUDES)kmeans.h $(INCLUDES)bconsts.h
-	$(CC) $(BNC_CFLAGS) -c $(SRC)kmeans.c -o $(BNC)kmeans$(BNC_SUFFIX).o
-
-#- PROFILING -#
-
-profiling: $(SRC)main.c $(PRF)kmeans_p.o $(PRF)utils_p.o 
-	$(CC) $(PROFILING_CFLAGS) $(SRC)main.c $(PRF)*_p.o -o $(PRF)$(PROFILING_EXEC) $(DEFAULT_VALS)
-
-$(PRF)utils_p.o: $(SRC)utils.c $(INCLUDES)utils.h
-	$(CC) $(PROFILING_CFLAGS) -c $(SRC)utils.c -o $(PRF)utils_p.o $(DEFAULT_VALS)
-
-$(PRF)kmeans_p.o: $(SRC)kmeans.c $(INCLUDES)kmeans.h
-	$(CC) $(PROFILING_CFLAGS) -c $(SRC)kmeans.c -o $(PRF)kmeans_p.o $(DEFAULT_VALS)
+# 
+# benchmark: $(SRC)main.c $(BIN)bnckmeans$(BNC_SUFFIX).o $(BIN)bncutils$(BNC_SUFFIX).o 
+# 	$(CC) $(BNC_CFLAGS) $(SRC)main.c $(BNC)*$(BNC_SUFFIX).o -o $(BNC)/bin/$(BNC_EXEC)$(BNC_SUFFIX)
+# 	rm $(BNC)*.o
+# 
+# $(BIN)bncutils$(BNC_SUFFIX).o: $(SRC)utils.c $(INCLUDES)utils.h 
+# 	$(CC) $(BNC_CFLAGS) -c $(SRC)utils.c -o $(BNC)utils$(BNC_SUFFIX).o
+# 
+# $(BIN)bnckmeans$(BNC_SUFFIX).o: $(SRC)kmeans.c $(INCLUDES)kmeans.h 
+# 	$(CC) $(BNC_CFLAGS) -c $(SRC)kmeans.c -o $(BNC)kmeans$(BNC_SUFFIX).o
 
 valgrind: main
 	valgrind $(VALGRIND_FLAGS) $(BIN)$(EXEC)
@@ -82,7 +72,6 @@ clean_objs:
 
 clean_exec:
 	@rm -f $(BIN)$(EXEC)
-	@rm -f $(PRF)$(PROFILING_EXEC)
 
 clean_benchmarks:
 	@rm -f $(BNC)bin/*
@@ -91,13 +80,8 @@ clean_benchmarks:
 clean: clean_objs clean_exec clean_benchmarks
 	@echo "Done cleaning"
 
-run: main
-	./$(BIN)$(EXEC)
+runseq: main
+	./$(BIN)$(EXEC) $(CP_CLUSTERS)
 
-run_prof: profiling
-	./$(PRF)$(PROFILING_EXEC)
-	@gprof $(PRF)$(PROFILING_EXEC) gmon.out > analysis.txt
-
-run_batch: main
-	@srun --partition=cpar perf stat -r 15 -e instructions,cycles ./bin/tp1
-	
+runpar: main
+	./$(BIN)$(EXEC) $(CP_CLUSTERS) $(THREADS)
