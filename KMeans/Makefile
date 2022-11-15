@@ -85,6 +85,3 @@ runseq: main
 
 runpar: main
 	./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS) $(THREADS)
-
-bench: main
-	./benchmarks/bench.sh

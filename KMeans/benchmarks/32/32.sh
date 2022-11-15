@@ -7,4 +7,4 @@ date
 echo "Running K-Means with 10000000 samples 32 clusters, sequential"
 
 # Run the program
-perf stat ./bin/k_means 10000000 32
+perf stat -r 20 ./bin/k_means 10000000 32
