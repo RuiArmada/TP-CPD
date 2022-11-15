@@ -76,7 +76,7 @@ inline uint32_t k_means_par_has_converged(const uint32_t iter) {
 void k_means_par_cluster_points(const point* samples, const point* clusters, k_means_aux** new, const uint32_t sample_count, const uint32_t cluster_count, const uint32_t num_threads) {
 	omp_set_num_threads(num_threads);
 
-	#pragma omp parallel shared(samples, clusters, new, sample_count, cluster_count)
+	#pragma omp parallel shared(samples, clusters, new)
 	{
 		uint32_t thread_id = omp_get_thread_num();
 		#pragma omp for schedule(static)
