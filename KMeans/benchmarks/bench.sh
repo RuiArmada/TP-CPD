@@ -2,22 +2,22 @@
 
 for i in 4 8 16 32
 do
-    for j in 2 4 8 16
+    for j in 2 4 8 16 32
     do
         while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-        perf stat -r 20 ./bin/k_means $i $j
+        sbatch --partition=cpar ./benchmarks/$i/$i\_$j.sh
     done
 done
 
 # run the rest of the benchmarks
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-perf stat -r 20 ./bin/k_means 10000000 4
+./benchmarks/4/4.sh
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-perf stat -r 20 ./bin/k_means 10000000 8
+./benchmarks/8/8.sh
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-perf stat -r 20 ./bin/k_means 10000000 16
+./benchmarks/16/16.sh
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-perf stat -r 20 ./bin/k_means 10000000 32
+./benchmarks/32/32.sh
 
 # wait for all jobs to finish
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
