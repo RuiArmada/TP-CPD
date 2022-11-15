@@ -15,13 +15,13 @@ done
 
 # run the rest of the benchmarks
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-./benchmarks/4/4.sh
+sbatch --partition=cpar ./benchmarks/4/4.sh
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-./benchmarks/8/8.sh
+sbatch --partition=cpar ./benchmarks/8/8.sh
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-./benchmarks/16/16.sh
+sbatch --partition=cpar ./benchmarks/16/16.sh
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-./benchmarks/32/32.sh
+sbatch --partition=cpar ./benchmarks/32/32.sh
 
 # wait for all jobs to finish
 while [ $(squeue -u $USER | wc -l) -gt 1 ]; do sleep 2; done
