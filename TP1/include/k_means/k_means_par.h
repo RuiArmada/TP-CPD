@@ -9,11 +9,11 @@
  *
  * @param samples
  * @param clusters
- * @param cluster_count
  * @param sample_count
+ * @param cluster_count
  * @param num_threads
  * @return k_means_out
  */
-k_means_out k_means_par(const point* samples, point* clusters, const uint32_t cluster_count, const uint32_t point_count, const uint32_t num_threads);
+k_means_out k_means_par(const point* samples, point* clusters, const uint32_t sample_count, const uint32_t cluster_count, const uint32_t num_threads);
 
 #endif

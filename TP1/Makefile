@@ -15,7 +15,7 @@ CFLAGS = -Wall -Wextra -Werror -lm -fopt-info -fopenmp
 # Performance flags
 CFLAGS += -O2 -ffast-math -flto
 # unfortunatly, -mfma is not supported by the cluster, speeds things up more than 2x
-CFLAGS += -mfma -msse4.2 -mfpmath=sse -mbmi2 -maes -mpclmul -mavx2 -mprfchw -mrdseed -mrdrnd -msgx -mxsave -mxsavec -mxsaveopt -mxsaves -mpopcnt
+CFLAGS += -mfma -msse4.2 -mfpmath=sse
 CFLAGS += -ftree-loop-if-convert
 
 #-VALGRIND-#

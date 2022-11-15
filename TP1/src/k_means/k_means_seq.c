@@ -64,9 +64,14 @@ void cluster_points_seq(const point* samples, const point* clusters, metric* new
  */
 uint32_t k_means_seq_has_converged(const metric* old, const metric* new, const uint32_t cluster_count) {
     uint32_t counter = 0;
+
     for (uint32_t i = 0; i < cluster_count; i++) {
-        counter |= (old[i].x_sum != new[i].x_sum) | (old[i].y_sum != new[i].y_sum) | (old[i].total != new[i].total);
+        counter += (old[i].x_sum != new[i].x_sum) || (old[i].y_sum != new[i].y_sum) || (old[i].total != new[i].total);
     }
+
+    // for (uint32_t i = 0; i < cluster_count; i++) {
+    //     counter |= (old[i].x_sum != new[i].x_sum) | (old[i].y_sum != new[i].y_sum) | (old[i].total != new[i].total);
+    // }
     return counter;
 }
 

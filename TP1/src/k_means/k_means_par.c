@@ -1,5 +1,7 @@
 #include <omp.h>
+#include <stdio.h>
 #include <string.h>
+
 
 #include "../../include/common/builtins.h"
 #include "../../include/k_means.h"
@@ -18,6 +20,7 @@ void k_means_par_cluster_points(const point* samples, const point* clusters, k_m
  * @param cluster_count
  */
 inline void aux_fold(k_means_aux* acc, k_means_aux** vec, const uint32_t num_threads, const uint32_t cluster_count) {
+	// print new
 	for (uint32_t i = 0; i < num_threads; i++) {
 		for (uint32_t j = 0; j < cluster_count; j++) {
 			acc[j].x_sum += vec[i][j].x_sum;
@@ -47,7 +50,6 @@ void k_means_par_recalc_clusters(point* clusters, const uint32_t cluster_count, 
 			clusters[i].x = totals[i].x_sum / totals[i].total;
 			clusters[i].y = totals[i].y_sum / totals[i].total;
 		}
-
 	}
 }
 
@@ -80,15 +82,14 @@ void k_means_par_cluster_points(const point* samples, const point* clusters, k_m
 		#pragma omp for schedule(static)
 		for (uint32_t i = 0; i < sample_count; i++) {
 			float min_distance = euclidean_distance_squared(&samples[i], &clusters[0]);
-
 			uint32_t cluster_id = 0;
 
 			for (uint32_t j = 1; j < cluster_count; j++) {
 				float distance = euclidean_distance_squared(&samples[i], &clusters[j]);
-
-				uint32_t cond = (distance < min_distance);
-				min_distance = distance * cond + min_distance * !cond;
-				cluster_id = j * cond + cluster_id * !cond;
+				if (distance < min_distance) {
+					min_distance = distance;
+					cluster_id = j;
+				}
 			}
 
 			// Instead of [cluster_count] we use [num_threads][cluster_count]
@@ -107,10 +108,10 @@ void k_means_par_cluster_points(const point* samples, const point* clusters, k_m
  * @param points The points.
  * @param clusters The clusters.
  * @param cluster_count The number of clusters.
- * @param point_count The number of points.
+ * @param sample_count The number of points.
  * @return k_means_out
  */
-k_means_out k_means_par(const point* samples, point* clusters, const uint32_t cluster_count, const uint32_t point_count, const uint32_t num_threads) {
+k_means_out k_means_par(const point* samples, point* clusters, const uint32_t sample_count, const uint32_t cluster_count, const uint32_t num_threads) {
 	uint32_t iter = 0;
 
 	k_means_out out = k_means_out_init(cluster_count);
@@ -118,7 +119,7 @@ k_means_out k_means_par(const point* samples, point* clusters, const uint32_t cl
 	k_means_aux** new = k_means_aux_init_2d(cluster_count, num_threads); // [num_threads][cluster_count]
 
 	// Step 1c - Assign each sample to the nearest cluster using the euclidean distance.
-	k_means_par_cluster_points(samples, clusters, new, cluster_count, point_count, num_threads);
+	k_means_par_cluster_points(samples, clusters, new, sample_count, cluster_count, num_threads);
 
 	do {
 		// Step 2 - Calculate the centroid of each cluster.
@@ -126,10 +127,11 @@ k_means_out k_means_par(const point* samples, point* clusters, const uint32_t cl
 
 		// Delete previous iter's metrics: set "new" to "old" and "new" to 0
 		memcpy(old, new, sizeof(k_means_aux*) * num_threads);
-		memset(new, 0, sizeof(k_means_aux*) * num_threads);
+		for (uint32_t i = 0; i < num_threads; i++)
+			memset(new[i], 0, sizeof(k_means_aux) * cluster_count);
 
 		// Step 3 - Assign each sample to the nearest cluster using the euclidean distance
-		k_means_par_cluster_points(samples, clusters, new, cluster_count, point_count, num_threads);
+		k_means_par_cluster_points(samples, clusters, new, sample_count, cluster_count, num_threads);
 
 		iter++;
 	} while (k_means_par_has_converged(iter));

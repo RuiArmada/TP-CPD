@@ -21,17 +21,17 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-
-    int sample_count = atoi(argv[1]);
-    int cluster_count = atoi(argv[2]);
+    uint32_t sample_count = atoi(argv[1]);
+    uint32_t cluster_count = atoi(argv[2]);
 
     point* samples = (point*)malloc(sample_count * sizeof(point));
     point* clusters = (point*)malloc(cluster_count * sizeof(point));
-
     k_means_out out = k_means_out_init(cluster_count);
 
+    gen_sample_seq(samples, clusters, cluster_count, sample_count);
+
     if (argc == 4) {
-        int thread_count = atoi(argv[3]);
+        uint32_t thread_count = atoi(argv[3]);
 
         out = k_means_par(samples, clusters, sample_count, cluster_count, thread_count);
     }
@@ -40,16 +40,21 @@ int main(int argc, char** argv) {
         out = k_means_seq(samples, clusters, sample_count, cluster_count);
     }
 
-    // Print the results
-    printf("N = %d, K = %d\n", sample_count, cluster_count);
-    for (int i = 0; i < cluster_count; i++) {
-        printf("Center: (%.3f, %.3f) : Size: %d\n",
-            clusters[i].x, clusters[i].y, out.cluster_size[i]);
-    }
+
+
     printf("Iterations: %d\n", out.iterations);
+    // Print the results
+    // printf("N = %d, K = %d\n", sample_count, cluster_count);
+    // for (int i = 0; i < cluster_count; i++) {
+    //     printf("Center: (%.3f, %.3f) : Size: %d\n",
+    //         clusters[i].x, clusters[i].y, out.cluster_size[i]);
+    // }
+    // printf("Iterations: %d\n", out.iterations);
 
     free(samples);
     free(clusters);
+    k_means_out_free(&out);
+
 
     return EXIT_SUCCESS;
 }
