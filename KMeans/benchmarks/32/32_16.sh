@@ -1,6 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=k_means_par
 #SBATCH --cpus-per-task=16
+#SBATCH --nodes=1
 #SBATCH --output=k_means_32_16.out
 date
 
