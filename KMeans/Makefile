@@ -41,8 +41,6 @@ $(BIN)k_means_par.o: $(SRC)k_means/k_means_par.c $(INCLUDES)k_means/common.h $(I
 	$(CC) $(CFLAGS) -c $(SRC)k_means/k_means_par.c -o $(BIN)k_means_par.o
 
 main: $(SRC)main.c $(BIN)euclidean_distance.o $(BIN)gen_samples.o $(BIN)k_means_seq.o $(BIN)k_means_par.o $(BIN)common.o
-# comment the following line if you want to use in your own computer/with a recent gcc
-	module load gcc/7.2.0
 	$(CC) $(CFLAGS) $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC)
 
 #- BENCHMARKS -#
