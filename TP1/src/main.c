@@ -40,16 +40,13 @@ int main(int argc, char** argv) {
         out = k_means_seq(samples, clusters, sample_count, cluster_count);
     }
 
-
-
-    printf("Iterations: %d\n", out.iterations);
     // Print the results
-    // printf("N = %d, K = %d\n", sample_count, cluster_count);
-    // for (int i = 0; i < cluster_count; i++) {
-    //     printf("Center: (%.3f, %.3f) : Size: %d\n",
-    //         clusters[i].x, clusters[i].y, out.cluster_size[i]);
-    // }
-    // printf("Iterations: %d\n", out.iterations);
+    printf("N = %d, K = %d\n", sample_count, cluster_count);
+    for (uint32_t i = 0; i < cluster_count; i++) {
+        printf("Center: (%.3f, %.3f) : Size: %d\n",
+            clusters[i].x, clusters[i].y, out.cluster_size[i]);
+    }
+    printf("Iterations: %d\n", out.iterations);
 
     free(samples);
     free(clusters);
