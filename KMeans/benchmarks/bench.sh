@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# creating the output folder and cleaning it if it already exists
+mkdir -p output
+rm -rf output/*.out
+
 for i in 4 8 16 32
 do
     for j in 2 4 8 16 32
@@ -20,9 +24,8 @@ while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
 ./benchmarks/32/32.sh
 
 # wait for all jobs to finish
-while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
+while [ $(squeue -u $USER | wc -l) -gt 1 ]; do sleep 2; done
 
-# prepare the output folder
-mkdir -p output
+# move the output files to the output folder
 mv *.out output
 tar -cf output$(date +%Y%m%d%H%M%S).tar output
