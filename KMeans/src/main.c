@@ -31,9 +31,9 @@ int main(int argc, char** argv) {
     gen_sample_seq(samples, clusters, cluster_count, sample_count);
 
     if (argc == 4) {
-        uint32_t thread_count = atoi(argv[3]);
+        uint32_t num_threads = atoi(argv[3]);
 
-        out = k_means_par(samples, clusters, sample_count, cluster_count, thread_count);
+        out = k_means_par(samples, clusters, sample_count, cluster_count, num_threads);
     }
     else {
         // Step 1 - Initialize the samples & clusters.
