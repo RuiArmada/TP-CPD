@@ -5,7 +5,6 @@ BNC = benchmarks/
 INCLUDES = include/
 EXEC = k_means
 # number of threads to use
-THREADS = 
 
 ########################################## CFLAGS #################################################
 # General purpose flags
@@ -81,7 +80,7 @@ clean: clean_objs clean_exec clean_benchmarks
 	@echo "Done cleaning"
 
 runseq: main
-	./$(BIN)$(EXEC) $(CP_CLUSTERS)
+	./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS)
 
 runpar: main
-	./$(BIN)$(EXEC) $(CP_CLUSTERS) $(THREADS)
+	./$(BIN)$(EXEC) 10000000 $(CP_CLUSTERS) $(THREADS)

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+module load gcc/7.2.0
+
 # Runs all the benchmarks in order
 sbatch benchmarks/4/4.sh
 sbatch benchmarks/4/4_2.sh
