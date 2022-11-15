@@ -25,4 +25,4 @@ while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
 # prepare the output folder
 mkdir -p output
 mv *.out output
-tar -cf output.tar output
+tar -cf output$(date +%Y%m%d%H%M%S).tar output
