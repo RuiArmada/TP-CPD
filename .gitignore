@@ -59,12 +59,9 @@ dkms.conf
 
 # custom rules
 
-# Executables
-tp1
-tp2
-
 # ide files
 .vscode/
+.editorconfig
 
 # log files
 *.log
