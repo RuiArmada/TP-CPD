@@ -12,16 +12,23 @@
  *       each iteration of the algorithm.
  */
 
-void k_means_seq_recalc_clusters(point* samples, const k_means_aux* clusters, const uint32_t cluster_count);
-void cluster_points_seq(const point* samples, const point* clusters, k_means_aux* new, const uint32_t sample_count, const uint32_t cluster_count);
-uint32_t k_means_seq_has_converged(const k_means_aux* old, const k_means_aux* new, const uint32_t cluster_count);
+void seq_recalc_centroids(point* samples, const k_means_aux* clusters, const uint32_t cluster_count);
+void seq_cluster_points(const point* samples, const point* clusters, k_means_aux* new, const uint32_t sample_count, const uint32_t cluster_count);
+uint32_t seq_has_converged(const k_means_aux* old, const k_means_aux* new, const uint32_t cluster_count);
 
 // Original python code was taken from https://datasciencelab.wordpress.com/tag/lloyds-algorithm/
 
-void k_means_seq_recalc_clusters(point* clusters, const k_means_aux* metrics, const uint32_t cluster_count) {
+/**
+ * @brief Recalculates the centroid of each cluster.
+ *
+ * @param clusters The clusters.
+ * @param cluster_count The size of each cluster.
+ * @param aux The auxiliary struct containing values of the last iteration.
+ */
+void seq_recalc_centroids(point* clusters, const k_means_aux* aux, const uint32_t cluster_count) {
     for (uint32_t i = 0; i < cluster_count; i++) {
-        clusters[i].x = metrics[i].x_sum / metrics[i].total;
-        clusters[i].y = metrics[i].y_sum / metrics[i].total;
+        clusters[i].x = aux[i].x_sum / aux[i].total;
+        clusters[i].y = aux[i].y_sum / aux[i].total;
     }
 }
 
@@ -33,7 +40,7 @@ void k_means_seq_recalc_clusters(point* clusters, const k_means_aux* metrics, co
  * @param new
  */
  // cluster points
-void cluster_points_seq(const point* samples, const point* clusters, k_means_aux* new, const uint32_t sample_count, const uint32_t cluster_count) {
+void seq_cluster_points(const point* samples, const point* clusters, k_means_aux* new, const uint32_t sample_count, const uint32_t cluster_count) {
     for (uint32_t i = 0; i < sample_count; i++) {
         float min_distance = euclidean_distance_squared(&samples[i], &clusters[0]);
         uint32_t cluster_id = 0;
@@ -57,7 +64,7 @@ void cluster_points_seq(const point* samples, const point* clusters, k_means_aux
  * @param old k_means_aux struct with previous iter values.
  * @param new k_means_aux struct with current iter values.
  */
-uint32_t k_means_seq_has_converged(const k_means_aux* old, const k_means_aux* new, const uint32_t cluster_count) {
+uint32_t seq_has_converged(const k_means_aux* old, const k_means_aux* new, const uint32_t cluster_count) {
     uint32_t counter = 0;
 
     for (uint32_t i = 0; i < cluster_count; i++) {
@@ -81,21 +88,21 @@ k_means_out k_means_seq(const point* samples, point* clusters, const uint32_t sa
     k_means_aux* new = k_means_aux_init(cluster_count);
 
     // Step 1c - Assign each sample to the nearest cluster using the euclidean distance.
-    cluster_points_seq(samples, clusters, new, sample_count, cluster_count);
+    seq_cluster_points(samples, clusters, new, sample_count, cluster_count);
 
     do {
         // Step 2 - Calculate the centroid of each cluster. (also known as the geometric center)
-        k_means_seq_recalc_clusters(clusters, new, cluster_count);
+        seq_recalc_centroids(clusters, new, cluster_count);
 
         // Delete previous iter's metrics: set "new" to "old" and "new" to 0
         memcpy(old, new, cluster_count * sizeof(k_means_aux));
         memset(new, 0, cluster_count * sizeof(k_means_aux));
 
         // Step 3 - Assign each sample to the nearest cluster using the euclidean distance
-        cluster_points_seq(samples, clusters, new, sample_count, cluster_count);
+        seq_cluster_points(samples, clusters, new, sample_count, cluster_count);
 
         iter++;
-    } while (k_means_seq_has_converged(old, new, cluster_count));  // Step 4, TODO: improve convergence check?
+    } while (seq_has_converged(old, new, cluster_count));  // Step 4, TODO: improve convergence check?
 
 
     // fill the output struct

@@ -4,7 +4,6 @@ SRC = src/
 BNC = benchmarks/
 INCLUDES = include/
 EXEC = k_means
-# number of threads to use
 # THREADS = 8
 
 ########################################## CFLAGS #################################################
@@ -14,14 +13,13 @@ CFLAGS = -Wall -Wextra -Werror -lm -fopt-info -fopenmp
 #-PERFORMANCE-#
 # Performance flags
 CFLAGS += -O2 -ffast-math -flto
-# unfortunatly, -mfma is not supported by the cluster, speeds things up more than 2x
+# The aren't supported in SeARCH.
 # CFLAGS += -mfma -msse4.2 -mfpmath=sse
 CFLAGS += -ftree-loop-if-convert
 
 #-VALGRIND-#
 
 VALGRIND_FLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --leak-resolution=high
-
 
 .DEFAULT_GOAL := main
 
@@ -43,24 +41,7 @@ $(BIN)k_means_par.o: $(SRC)k_means/k_means_par.c $(INCLUDES)k_means/common.h $(I
 main: $(SRC)main.c $(BIN)euclidean_distance.o $(BIN)gen_samples.o $(BIN)k_means_seq.o $(BIN)k_means_par.o $(BIN)common.o
 	$(CC) $(CFLAGS) $(SRC)main.c $(BIN)*.o -o $(BIN)$(EXEC)
 
-#- BENCHMARKS -#
-
-# Benchmarks take three arguments:
-# 1. The CFLASGS to compile with, BNC_CFLAGS
-# 2. The suffix to append to the executable and .o files, BNC_SUFFIX
-# 3. The name of the executable, BNC_EXEC
-# Check include/bconsts.h for the accepted values for the functions
-# 
-# benchmark: $(SRC)main.c $(BIN)bnckmeans$(BNC_SUFFIX).o $(BIN)bncutils$(BNC_SUFFIX).o 
-# 	$(CC) $(BNC_CFLAGS) $(SRC)main.c $(BNC)*$(BNC_SUFFIX).o -o $(BNC)/bin/$(BNC_EXEC)$(BNC_SUFFIX)
-# 	rm $(BNC)*.o
-# 
-# $(BIN)bncutils$(BNC_SUFFIX).o: $(SRC)utils.c $(INCLUDES)utils.h 
-# 	$(CC) $(BNC_CFLAGS) -c $(SRC)utils.c -o $(BNC)utils$(BNC_SUFFIX).o
-# 
-# $(BIN)bnckmeans$(BNC_SUFFIX).o: $(SRC)kmeans.c $(INCLUDES)kmeans.h 
-# 	$(CC) $(BNC_CFLAGS) -c $(SRC)kmeans.c -o $(BNC)kmeans$(BNC_SUFFIX).o
-
+########################################## VALGRIND ###############################################
 valgrind: main
 	valgrind $(VALGRIND_FLAGS) $(BIN)$(EXEC)
 
