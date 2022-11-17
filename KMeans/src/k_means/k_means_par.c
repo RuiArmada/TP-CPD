@@ -18,7 +18,7 @@ void par_cluster_points(const point* samples, const point* clusters, k_means_aux
  * @param cluster_size The size of each cluster.
  * @param aux The auxiliary struct containing values of the last iteration.
  */
-void par_recalc_centroids(point* clusters, const uint32_t cluster_count, k_means_aux** aux, const uint32_t num_threads) {
+void par_recalc_centroids(point* clusters, const uint32_t cluster_count, k_means_aux** aux, unused const uint32_t num_threads) {
 	memset(clusters, 0, cluster_count * sizeof(point));
 
 	for (uint32_t i = 0; i < cluster_count; i++) {
@@ -31,6 +31,11 @@ void par_recalc_centroids(point* clusters, const uint32_t cluster_count, k_means
 		clusters[i].x /= accumulator;
 		clusters[i].y /= accumulator;
 	}
+	// For the atomic version
+	// for (uint32_t i = 0; i < cluster_count; i++) {
+	// 	clusters[i].x = aux[0][i].x_sum / aux[0][i].total;
+	// 	clusters[i].y = aux[0][i].y_sum / aux[0][i].total;
+	// }
 }
 
 /**
@@ -58,7 +63,7 @@ void par_cluster_points(const point* samples, const point* clusters, k_means_aux
 	#pragma omp parallel shared(samples, clusters, new)
 	{
 		uint32_t thread_id = omp_get_thread_num();
-		#pragma omp for
+		#pragma omp for schedule(static)
 		for (uint32_t i = 0; i < sample_count; i++) {
 			float min_distance = euclidean_distance_squared(&samples[i], &clusters[0]);
 			uint32_t cluster_id = 0;
@@ -81,6 +86,46 @@ void par_cluster_points(const point* samples, const point* clusters, k_means_aux
 }
 
 /**
+ * @brief Assigns each point to a cluster.
+ *
+ * @param samples The points to be clustered.
+ * @param clusters The clusters.
+ * @param new The auxiliary struct containing values of the current iteration.
+ * @param sample_count The number of points.
+ * @param cluster_count The number of clusters.
+ */
+void par_cluster_points_atomic(const point* samples, const point* clusters, k_means_aux** new, const uint32_t sample_count, const uint32_t cluster_count, const uint32_t num_threads) {
+	omp_set_num_threads(num_threads);
+
+	#pragma omp parallel shared(samples, clusters, new)
+	{
+		// uint32_t thread_id = omp_get_thread_num();
+		#pragma omp for
+		for (uint32_t i = 0; i < sample_count; i++) {
+			float min_distance = euclidean_distance_squared(&samples[i], &clusters[0]);
+			uint32_t cluster_id = 0;
+
+			for (uint32_t j = 1; j < cluster_count; j++) {
+				float distance = euclidean_distance_squared(&samples[i], &clusters[j]);
+				if (distance < min_distance) {
+					min_distance = distance;
+					cluster_id = j;
+				}
+			}
+
+			// Instead of [cluster_count] we use [num_threads][cluster_count]
+			// This way we can iterate over num_threads samples at a time and not be worried about data races.
+			#pragma omp atomic
+			new[0][cluster_id].x_sum += samples[i].x;
+			#pragma omp atomic
+			new[0][cluster_id].y_sum += samples[i].y;
+			#pragma omp atomic
+			new[0][cluster_id].total++;
+		}
+	}
+}
+
+/**
  * @brief The parallel k-means algorithm.
  *        Uses openmp to parallelize the calculation.
  *
@@ -94,7 +139,7 @@ k_means_out k_means_par(const point* samples, point* clusters, const uint32_t sa
 	uint32_t iter = 0;
 
 	k_means_out out = k_means_out_init(cluster_count);
-	k_means_aux** old = k_means_aux_init_2d(cluster_count, num_threads); // [num_threads][cluster_count]
+	// k_means_aux** old = k_means_aux_init_2d(cluster_count, num_threads); // [num_threads][cluster_count]
 	k_means_aux** new = k_means_aux_init_2d(cluster_count, num_threads); // [num_threads][cluster_count]
 
 	// Step 1c - Assign each sample to the nearest cluster using the euclidean distance.
@@ -105,7 +150,7 @@ k_means_out k_means_par(const point* samples, point* clusters, const uint32_t sa
 		par_recalc_centroids(clusters, cluster_count, &new[0], num_threads);
 
 		// Delete previous iter's metrics: set "new" to "old" and "new" to 0
-		memcpy(old, new, sizeof(k_means_aux*) * num_threads);
+		// memcpy(old, new, sizeof(k_means_aux*) * num_threads);
 		for (uint32_t i = 0; i < num_threads; i++)
 			memset(new[i], 0, sizeof(k_means_aux) * cluster_count);
 
@@ -125,7 +170,7 @@ k_means_out k_means_par(const point* samples, point* clusters, const uint32_t sa
 	out.iterations = iter;
 
 	// Free the allocated memory
-	free(old);
+	// free(old);
 	free(new);
 
 	return out;
