@@ -12,7 +12,8 @@ CFLAGS = -Wall -Wextra -Werror -lm -fopt-info -fopenmp
 
 #-PERFORMANCE-#
 # Performance flags
-CFLAGS += -O2 -ffast-math -flto
+#CFLAGS += -O2 -ffast-math -flto
+CFLAGS += -O2 -ffast-math -fno-omit-frame-pointer -g
 # The aren't supported in SeARCH.
 # CFLAGS += -mfma -msse4.2 -mfpmath=sse
 CFLAGS += -ftree-loop-if-convert
