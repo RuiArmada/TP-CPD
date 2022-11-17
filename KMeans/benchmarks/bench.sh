@@ -4,7 +4,7 @@
 mkdir -p output
 rm -rf output/*.out
 
-for i in 4 8 16 32
+for i in 4 32
 do
     for j in 2 4 8 16 32
     do
@@ -16,10 +16,6 @@ done
 # run the rest of the benchmarks
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
 sbatch --partition=cpar ./benchmarks/4/4.sh
-while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-sbatch --partition=cpar ./benchmarks/8/8.sh
-while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
-sbatch --partition=cpar ./benchmarks/16/16.sh
 while [ $(squeue -u $USER | wc -l) -gt 2 ]; do sleep 2; done
 sbatch --partition=cpar ./benchmarks/32/32.sh
 
