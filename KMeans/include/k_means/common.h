@@ -23,7 +23,6 @@ typedef struct auxiliary {
     uint32_t total;
 } k_means_aux;
 
-
 /**
  * @brief Initializes the output struct.
  *

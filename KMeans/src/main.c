@@ -52,6 +52,5 @@ int main(int argc, char** argv) {
     free(clusters);
     k_means_out_free(&out);
 
-
     return EXIT_SUCCESS;
 }

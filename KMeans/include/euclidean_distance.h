@@ -3,7 +3,6 @@
 
 #include <inttypes.h>
 
-
 typedef struct point point;
 
 /**
@@ -27,6 +26,5 @@ float euclidean_distance_sqrt(const point* p1, const point* p2);
  * @return float The squared euclidean distance between the two points.
  */
 float euclidean_distance_squared(const point* p1, const point* p2);
-
 
 #endif

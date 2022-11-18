@@ -15,8 +15,6 @@
 void gen_sample_seq(point* samples, point* clusters, uint32_t cluster_count, uint32_t sample_count) {
     srand(10);
 
-    // printf("Generating %d samples and %d clusters\n", sample_count, cluster_count);
-
     for (uint_fast32_t i = 0; i < sample_count; i += 1) {
         samples[i].x = (float)rand() / RAND_MAX;
         samples[i].y = (float)rand() / RAND_MAX;

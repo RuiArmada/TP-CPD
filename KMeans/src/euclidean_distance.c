@@ -1,5 +1,4 @@
 
-#include <immintrin.h>
 #include <inttypes.h>
 #include <math.h>
 #include <omp.h>
@@ -32,4 +31,3 @@ float euclidean_distance_sqrt(const point* p1, const point* p2) {
 inline float euclidean_distance_squared(const point* p1, const point* p2) {
     return powf(p1->x - p2->x, 2) + powf(p1->y - p2->y, 2);
 }
-
