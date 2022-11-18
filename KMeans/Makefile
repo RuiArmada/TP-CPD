@@ -4,7 +4,7 @@ SRC = src/
 BNC = benchmarks/
 INCLUDES = include/
 EXEC = k_means
-# THREADS = 8
+THREADS = 16
 
 ########################################## CFLAGS #################################################
 # General purpose flags
