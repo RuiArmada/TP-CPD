@@ -10,7 +10,7 @@ BIN_NAME = kmeans_cuda
 CXX = nvcc
 LD  = nvcc
 
-CXXFLAGS = -O3 -std=c++17 -arch=native -Wno-deprecated-gpu-targets 
+CXXFLAGS = -O3 -std=c++17 -arch=sm_35 -Wno-deprecated-gpu-targets 
 
 SRC_DIR = src
 BIN_DIR = bin
@@ -38,6 +38,12 @@ checkdirs:
 	@mkdir -p $(BIN_DIR)
 
 all: checkdirs $(BIN_DIR)/$(BIN_NAME)
+	@echo "If any error occurs, try to load the following modules:"
+	@echo "module load cuda/11.3.1"
+	@echo "module load gcc/7.2.0"
 
 clean:
 	rm -f $(BUILD_DIR)/* $(BIN_DIR)/* 
+
+run: clean all
+	sbatch run.sh
