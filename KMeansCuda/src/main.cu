@@ -99,13 +99,10 @@ void gen_samples(float* s, float* h_cx, float* h_cy, u32 k, u32 n) {
 }
 
 int main(int argc, char** argv) {
-    // int n = atoi(argv[1]);
-    // int k = atoi(argv[2]);
-    // int b = atoi(argv[3]);
+    int n = atoi(argv[1]);
+    int k = atoi(argv[2]);
 
-    int n = 10000000; // 10 M
-    int k = 64; // 64
-    int b = 256; // 256
+    int tpb = 256; // Block Size (Threads Per Block)
 
     float* h_s = (float*)malloc(n * 2 * sizeof(float));
     float* h_cx = (float*)malloc(k * sizeof(float));
@@ -135,7 +132,7 @@ int main(int argc, char** argv) {
     cuda_err_check(cudaMemcpy(d_cx, h_cx, k * sizeof(float), cudaMemcpyHostToDevice));
     cuda_err_check(cudaMemcpy(d_cy, h_cy, k * sizeof(float), cudaMemcpyHostToDevice));
 
-    u32 t = n / b;
+    u32 gsz = ceil((float)n / (float)tpb);
 
     // it's cuda time
     cudaEvent_t start, stop;
@@ -146,10 +143,9 @@ int main(int argc, char** argv) {
 
     for (int iter = 0; iter < iter_max; iter++) {
         d_clear_accumulators << <1, k >> > (d_xa, d_ya, d_ca);
-        d_cluster_points << <t, b >> > (d_s, d_cx, d_cy, d_xa, d_ya, d_ca, n, k);
+        d_cluster_points << <gsz, tpb >> > (d_s, d_cx, d_cy, d_xa, d_ya, d_ca, n, k);
         cudaDeviceSynchronize();
         d_recalc_centroids << <1, k >> > (d_cx, d_cy, d_xa, d_ya, d_ca);
-        cudaDeviceSynchronize();
     }
 
     // allocate memory for the centroids_out
@@ -167,7 +163,6 @@ int main(int argc, char** argv) {
     float milliseconds = 0;
     cudaEventElapsedTime(&milliseconds, start, stop);
     printf("Time taken: %f ms (%f s)\n", milliseconds, milliseconds / 1000.0f);
-
 
     // Print the results
     printf("N = %d, K = %d\n", n, k);
